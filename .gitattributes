@@ -1,0 +1,1 @@
+parrot_ws/src/** filter=lfs diff=lfs merge=lfs -text
