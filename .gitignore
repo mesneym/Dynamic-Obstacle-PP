@@ -129,6 +129,10 @@ dmypy.json
 .pyre/
 
 # Custom directories to ignore
-./parrot_ws/devel
-./parrot_ws/build
+./parrot_ws/devel/
+./parrot_ws/build/
+./drone_ws/build/
+./drone_ws/devel/
+
+
 
