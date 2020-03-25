@@ -1,4 +1,4 @@
-#!/home/ak/.pyenv/shims/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Software License Agreement (BSD License)
@@ -270,7 +270,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = '/home/ak/drone_ws/devel;/home/ak/teleop_ws/devel;/opt/ros/kinetic'.split(';')
+            CMAKE_PREFIX_PATH = '/opt/ros/kinetic'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []
