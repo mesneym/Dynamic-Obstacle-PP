@@ -1,24 +1,3 @@
-
-(cl:in-package :asdf)
-
-(defsystem "ardrone_as-msg"
-  :depends-on (:roslisp-msg-protocol :roslisp-utils :actionlib_msgs-msg
-               :sensor_msgs-msg
-               :std_msgs-msg
-)
-  :components ((:file "_package")
-    (:file "ArdroneAction" :depends-on ("_package_ArdroneAction"))
-    (:file "_package_ArdroneAction" :depends-on ("_package"))
-    (:file "ArdroneActionFeedback" :depends-on ("_package_ArdroneActionFeedback"))
-    (:file "_package_ArdroneActionFeedback" :depends-on ("_package"))
-    (:file "ArdroneActionGoal" :depends-on ("_package_ArdroneActionGoal"))
-    (:file "_package_ArdroneActionGoal" :depends-on ("_package"))
-    (:file "ArdroneActionResult" :depends-on ("_package_ArdroneActionResult"))
-    (:file "_package_ArdroneActionResult" :depends-on ("_package"))
-    (:file "ArdroneFeedback" :depends-on ("_package_ArdroneFeedback"))
-    (:file "_package_ArdroneFeedback" :depends-on ("_package"))
-    (:file "ArdroneGoal" :depends-on ("_package_ArdroneGoal"))
-    (:file "_package_ArdroneGoal" :depends-on ("_package"))
-    (:file "ArdroneResult" :depends-on ("_package_ArdroneResult"))
-    (:file "_package_ArdroneResult" :depends-on ("_package"))
-  ))
+version https://git-lfs.github.com/spec/v1
+oid sha256:67bfbae5b48bc877ca257f53b04551a3ca020510d87bc42651107d66e83d0728
+size 1182

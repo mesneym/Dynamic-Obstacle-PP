@@ -1,20 +1,3 @@
-
-"use strict";
-
-let ArdroneResult = require('./ArdroneResult.js');
-let ArdroneAction = require('./ArdroneAction.js');
-let ArdroneGoal = require('./ArdroneGoal.js');
-let ArdroneFeedback = require('./ArdroneFeedback.js');
-let ArdroneActionResult = require('./ArdroneActionResult.js');
-let ArdroneActionFeedback = require('./ArdroneActionFeedback.js');
-let ArdroneActionGoal = require('./ArdroneActionGoal.js');
-
-module.exports = {
-  ArdroneResult: ArdroneResult,
-  ArdroneAction: ArdroneAction,
-  ArdroneGoal: ArdroneGoal,
-  ArdroneFeedback: ArdroneFeedback,
-  ArdroneActionResult: ArdroneActionResult,
-  ArdroneActionFeedback: ArdroneActionFeedback,
-  ArdroneActionGoal: ArdroneActionGoal,
-};
+version https://git-lfs.github.com/spec/v1
+oid sha256:2308cc5f6a26c8419d646a503dc966d338f8a41d3b157501e62325ab3aadc1c2
+size 692

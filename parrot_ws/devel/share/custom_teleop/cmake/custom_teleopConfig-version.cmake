@@ -1,14 +1,3 @@
-# generated from catkin/cmake/template/pkgConfig-version.cmake.in
-set(PACKAGE_VERSION "0.0.0")
-
-set(PACKAGE_VERSION_EXACT False)
-set(PACKAGE_VERSION_COMPATIBLE False)
-
-if("${PACKAGE_FIND_VERSION}" VERSION_EQUAL "${PACKAGE_VERSION}")
-  set(PACKAGE_VERSION_EXACT True)
-  set(PACKAGE_VERSION_COMPATIBLE True)
-endif()
-
-if("${PACKAGE_FIND_VERSION}" VERSION_LESS "${PACKAGE_VERSION}")
-  set(PACKAGE_VERSION_COMPATIBLE True)
-endif()
+version https://git-lfs.github.com/spec/v1
+oid sha256:713c10b60240e4f285dc9fbdc73db267a0d5b2fce221686a29d33e10801fc772
+size 426

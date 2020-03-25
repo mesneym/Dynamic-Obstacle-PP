@@ -1,8 +1,3 @@
-#!/usr/bin/env bash
-# generated from catkin/cmake/templates/local_setup.bash.in
-
-CATKIN_SHELL=bash
-
-# source setup.sh from same directory as this file
-_CATKIN_SETUP_DIR=$(builtin cd "`dirname "${BASH_SOURCE[0]}"`" > /dev/null && pwd)
-. "$_CATKIN_SETUP_DIR/setup.sh" --extend --local
+version https://git-lfs.github.com/spec/v1
+oid sha256:e8752004627b2638cbc06cb168569474543d6afb6d5c1b54d0018dc118d66f66
+size 283

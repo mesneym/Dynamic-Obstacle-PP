@@ -1,8 +1,3 @@
-#!/usr/bin/env zsh
-# generated from catkin/cmake/templates/setup.zsh.in
-
-CATKIN_SHELL=zsh
-
-# source setup.sh from same directory as this file
-_CATKIN_SETUP_DIR=$(builtin cd -q "`dirname "$0"`" > /dev/null && pwd)
-emulate -R zsh -c 'source "$_CATKIN_SETUP_DIR/setup.sh"'
+version https://git-lfs.github.com/spec/v1
+oid sha256:cd3b702886ebd09d67b40439ac8db490842e7703574a15e5f860307e4e956c2a
+size 270

@@ -1,9 +1,3 @@
-#!/usr/bin/env sh
-# generated from catkin/cmake/template/local_setup.sh.in
-
-# since this file is sourced either use the provided _CATKIN_SETUP_DIR
-# or fall back to the destination set at configure time
-: ${_CATKIN_SETUP_DIR:=/home/eashwar/Desktop/Dynamic-Obstacle-PP/parrot_ws/devel}
-CATKIN_SETUP_UTIL_ARGS="--extend --local"
-. "$_CATKIN_SETUP_DIR/setup.sh"
-unset CATKIN_SETUP_UTIL_ARGS
+version https://git-lfs.github.com/spec/v1
+oid sha256:1af7123422e28954cac75eeb6ebdcef83e2b98eb2465168bc5248f8d42b2d768
+size 388
