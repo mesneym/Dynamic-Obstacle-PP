@@ -35,122 +35,8 @@ def writeParametersForGazebo(dt,is1,is2,iorientation):
     params = np.array([dt,s1,s2,orientation]) 
     np.savetxt('gazebo_params.txt',params,delimiter=',')
 
-###################################################
-#                  Parameters 
-###################################################
-#------------------------------
-#  Getting user Inputs
-#------------------------------
-# clearance = 0
-# print('Robot considered is Turtlebot 2:')
-# print("Enter cleareance")
-# clearance = float(input())
 
-# print('Enter start location s1 between -5 and 5')
-# is1 = float(input())
-# print('Enter start location s2 between -5 and 5')
-# is2 = float(input())
-# print('Enter the angle of the robot in degrees')
-# istartOrientation = float(input())
-
-# print('Enter goal location g1 between -5 and 5')
-# ig1 = float(input())
-# print('Enter goal location g2 between -5 and 5')
-# ig2 = float(input())
-
-# print('Enter left wheel rotational velocity')
-# iul = float(input())
-# print('Enter right wheel rotational velocity')
-# iur = float(input())
-
-# print('Enter smooth Coef or negative value for default paramater')
-# ismoothCoef = float(input())
-
-# print('Enter Time step or negative value for default paramater')
-# idt = float(input())
-
-iul = 20
-iur = 20
-is1 = -4#-4  #-4   
-is2 = -4#-4  #-3     
-ig1 = 4#4   #0       
-ig2 = 2.5#2.5  #-3    
-istartOrientation = 0
-idt = -1#0.6 #0.8
-ismoothCoef = -1# 0.2 #0.1
-
-#---------------------------------
-# Inputs From World Coordinates 
-# To Pygame Coordinates
-#---------------------------------
-startOrientation = 360 - istartOrientation
-ul = iul
-ur = iur
-s1 = 5+(is1)
-s2 = 5-(is2)
-g1 = 5+(ig1)
-g2 = 5-(ig2)
-dt = idt if(idt>=0.0) else  0.3
-smoothCoef = ismoothCoef if (ismoothCoef>= 0) else 0.5
-
-#---------------------------
-#  Precision Parameters
-#---------------------------
-threshDistance = 0.1
-clearance = 0.3
-threshAngle = 5
-
-#---------------------------
-#  Robot parameters
-#---------------------------
-# smoothCoef = ismoothCoef if (ismoothCoef>= 0) else 0.5
-wheelDist = 0.2116 # 0.3175/6 * 4
-wheelRadius = 0.038
-robotParams = [ul,ur,wheelRadius,wheelDist, smoothCoef]
-robotRadius = 0.177
-
-#-------------------------------
-#  Parameters needed by gazebo
-#-------------------------------
-#dt - affects publishing rate
-#   - dt must be of resolution 0.1 
-#   - restricting frequency to 10Hz in gazebo
-#   - 1/frequency*dt must be a whole number 
-
-#is1,is2,iorientation- initial pose for robot
-writeParametersForGazebo(dt,is1,is2,istartOrientation)
-
-#----------------------------
-#  Display parameters
-#----------------------------
-# pygame.init()
-
-res = 1.0  #resolution of grid 
-scale = 80 #scale of grid
-
-white = (255,255,255)
-black = (0,0,0)
-red = (255,0,0)
-green = (0,255,0)
-blue = (0,0,255)
-yellow = (255,255,0)
-
-size_x = 11.0
-size_y = 11.0
-size_z = 5.0
-# gameDisplay = pygame.display.set_mode((size_x*scale,size_y*scale))
-
-#----------------------------
-# Start and goal coordinates
-#----------------------------
-startCoor = np.float32((np.float32([s1,s2,startOrientation]))/res)
-goalCoor = np.float32((np.float32([g1,g2,0]))/res)
-
-startEndCoor = [startCoor,goalCoor]
-
-
-
-def drawEnv(ax):
+def drawEnv():
     c2 = Circle((size_x/2,size_y/2), 3,fill=True,linestyle='-',linewidth=5,color='black',alpha=0.2)
     c3 = Circle((size_x/2,size_y/2), 5,fill=True,linestyle='-',linewidth=5,fc='black',ec='black',alpha=0.2)
     c1 = Circle((size_x/2,size_y/2), 4,fill=False,linestyle='--',linewidth=5,color='white')
@@ -202,26 +88,161 @@ def drawEnv(ax):
     xGrid =3*np.cos(thetaGrid)+size_x/2
     yGrid =3*np.sin(thetaGrid)+size_y/2
     ax.plot_surface(xGrid,yGrid,zGrid,alpha=0.2,color='black')
-    
+
+
+
+###################################################
+#                  Parameters 
+###################################################
+#------------------------------
+#  Getting user Inputs
+#------------------------------
+# clearance = 0
+# print('Robot considered is Turtlebot 2:')
+# print("Enter cleareance")
+# clearance = float(input())
+
+# print('Enter start location s1 between -5 and 5')
+# is1 = float(input())
+# print('Enter start location s2 between -5 and 5')
+# is2 = float(input())
+# print('Enter the angle of the robot in degrees')
+# istartOrientation = float(input())
+
+# print('Enter goal location g1 between -5 and 5')
+# ig1 = float(input())
+# print('Enter goal location g2 between -5 and 5')
+# ig2 = float(input())
+
+# print('Enter left wheel rotational velocity')
+# iul = float(input())
+# print('Enter right wheel rotational velocity')
+# iur = float(input())
+
+# print('Enter smooth Coef or negative value for default paramater')
+# ismoothCoef = float(input())
+
+# print('Enter Time step or negative value for default paramater')
+# idt = float(input())
+
+iul = 20
+iur = 20
+is1 = -4#-4  #-4   
+is2 = -4#-4  #-3     
+ig1 = 4#4   #0       
+ig2 = 2.5#2.5  #-3    
+istartOrientation = 0
+idt = 0.6 #0.8
+ismoothCoef =  0.2 #0.1
+
+#---------------------------------
+# Inputs From World Coordinates 
+# To Pygame Coordinates
+#---------------------------------
+startOrientation = 360 - istartOrientation
+ul = iul
+ur = iur
+s1 = 5+(is1)
+s2 = 5-(is2)
+g1 = 5+(ig1)
+g2 = 5-(ig2)
+dt = idt if(idt>=0.0) else  0.3
+smoothCoef = ismoothCoef if (ismoothCoef>= 0) else 0.5
+
+#---------------------------
+#  Precision Parameters
+#---------------------------
+threshDistance = 0.1
+clearance = 0.3
+threshAngle = 5
+
+#---------------------------
+#  Robot parameters
+#---------------------------
+# smoothCoef = ismoothCoef if (ismoothCoef>= 0) else 0.5
+wheelDist = 0.2116 # 0.3175/6 * 4
+wheelRadius = 0.038
+robotParams = [ul,ur,wheelRadius,wheelDist, smoothCoef]
+robotRadius = 0.177
+
+#-------------------------------
+#  Parameters needed by gazebo
+#-------------------------------
+#dt - affects publishing rate
+#   - dt must be of resolution 0.1 
+#   - restricting frequency to 10Hz in gazebo
+#   - 1/frequency*dt must be a whole number 
+
+#is1,is2,iorientation- initial pose for robot
+writeParametersForGazebo(dt,is1,is2,istartOrientation)
+
+#----------------------------
+#  Display parameters
+#----------------------------
+size_x = 11.0
+size_y = 11.0
+size_z = 5.0
+
+#----------------------------
+# Start and goal coordinates
+#----------------------------
+res = 1
+startCoor = np.float32((np.float32([s1,s2,startOrientation]))/res)
+goalCoor = np.float32((np.float32([g1,g2,0]))/res)
+
+startEndCoor = [startCoor,goalCoor]
+
     
 def drawStartAndGoal():
+    u = np.linspace(0, np.pi, 40)
+    v = np.linspace(0, 2 * np.pi, 40)
+    
+    x = startCoor[0] + 0.2*np.outer(np.sin(u), np.sin(v))
+    y = startCoor[1] + 0.2*np.outer(np.sin(u), np.cos(v))
+    z = startCoor[2] + 0.2*np.outer(np.cos(u), np.ones_like(v)) 
+    
+    gx = goalCoor[0] + 0.2*np.outer(np.sin(u), np.sin(v))
+    gy = goalCoor[1] + 0.2*np.outer(np.sin(u), np.cos(v))
+    gz = goalCoor[2] + 0.2*np.outer(np.cos(u), np.ones_like(v)) 
+
+    ax.plot_surface(x,y,z,color='blue')
+    ax.plot_surface(gx,gy,gz,color='orange')
+
+
+def drawObstacles(num):
     pass
 
 def drawExploredNodes():
+
     pass
 
 def drawOptimalPath():
     pass
 
-def update():
-    pass
 
+def get_arrow(pt,pt2):
+    x,y = pt
+    u,v = pt2-pt
+    return x,y,2,u,v,0
 
+def update(num,nodesExplored,nList):
+    if(nodesExplored[nList[num]].parent):
+        global quiver
+        pt = nodesExplored[nList[num]].state[0:2]
+        ptParent = nodesExplored[nList[num]].parent.state[0:2]
+        # quiver.remove()
+        quiver = ax.quiver(*get_arrow(ptParent,pt))
 
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
+
+q = []
+nodesExplored = {}
+success,solution = generatePath(q,startEndCoor,nodesExplored,robotParams,dt,clearance+robotRadius,threshDistance,threshAngle)
+drawEnv()
+drawStartAndGoal()
 
 ax.set_xlim3d([0.0, size_x])
 ax.set_xlabel('X')
@@ -234,8 +255,14 @@ ax.set_zlabel('Z')
 
 ax.set_title('workspace')
 ax.set_facecolor('orange')
-drawEnv(ax)
 
+
+numframes= len(nodesExplored)#+len(solution)
+nList = sorted(nodesExplored.keys())
+
+print(numframes)
+quiver = ax.quiver(*get_arrow(np.array([0,0]),np.array([0,0])))
+ani = animation.FuncAnimation(fig, update,numframes, fargs=(nodesExplored,nList),interval=1, blit=False)
 plt.show()
 
 
@@ -336,10 +363,6 @@ plt.show()
 # line_ani = animation.FuncAnimation(fig, update_lines,a, fargs=(data, lines),
                                    # interval=50, blit=True)
 # plt.show()
-
-
-
-
 
 
 
