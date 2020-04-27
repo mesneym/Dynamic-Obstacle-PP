@@ -88,7 +88,7 @@ def pathIsSafe(pt1, pt2, radiusClearance, temp):
             if i == 0:
                 return [True, pt1]
             else:
-                return [True, (t[i-1] * v + pt1)[0:2]]
+                return [True, (t[i - 1] * v + pt1)[0:2]]
     if temp == 1:
         return [True, pt2]
     return [True, r]
@@ -99,7 +99,7 @@ def printPath(node):
     solution = []
     current = node
     while current:
-        sol = np.append(current.state, current.velocities)
+        sol = np.append(current.state)
         solution.append(sol)
         current = current.parent
 
@@ -122,9 +122,20 @@ def distance(startPosition, goalPosition):
 
 
 def generatePoint():
-    x = rd.random() * 10
-    y = rd.random() * 10
+    x = rd.uniform(1.0, 5.0)
+    y = rd.uniform(1.0, 5.0)
     return [x, y]
+
+
+def minimumDistance(nodesExplored, newState):
+    min = 15
+    str = ""
+    for key, node in nodesExplored.items():
+        dist = distance(node.state, newState)
+        if dist < min:
+            min = dist
+            str = key
+    return str, min
 
 
 # generates optimal path for robot
@@ -139,11 +150,13 @@ def generatePath(q, startEndCoor, nodesExplored, dt, radiusClearance, threshDist
     nodesExplored[key] = root
 
     count = 1
-    heapq.heappush(q, (root.cost, count, root))
+    # heapq.heappush(q, (root.cost, count, root))
 
-    while len(q) > 0:
+    while True:#len(q) > 0:
         # print(len(q))
-        _, _, currentNode = heapq.heappop(q)
+        # _, _, currentNode = heapq.heappop(q)
+        if count == 1:
+            currentNode = root
         # print(distance(currentNode.state, [gx, gy]))
         if distance(currentNode.state, [gx, gy]) <= 0.3:
             sol = printPath(currentNode)
@@ -180,28 +193,30 @@ def generatePath(q, startEndCoor, nodesExplored, dt, radiusClearance, threshDist
 
         newPosX, newPosY = generatePoint()
         # print(newPosX, newPosY)
-        newState = np.array(normalize([newPosX, newPosY], threshDistance))
+        newState = np.array([newPosX, newPosY])# np.array(normalize([newPosX, newPosY], threshDistance))
         s = str(newState[0]) + str(newState[1])
+        parentkey, dist = minimumDistance(nodesExplored, newState)
 
         if s not in nodesExplored:
             if isSafe(newState, 1, radiusClearance):
                 status = False
                 while not status:
-                    status, newState = pathIsSafe(newState, currentNode.state, radiusClearance, 1)
+                    status, newState = pathIsSafe(newState, nodesExplored[parentkey].state, radiusClearance, 1)
                     # print(status)
             else:
-                status, newState = pathIsSafe(newState, currentNode.state, radiusClearance, 0)
+                status, newState = pathIsSafe(newState, nodesExplored[parentkey].state, radiusClearance, 0)
                 print(status)
             # newCostToCome = currentNode.costToCome + distance(newState, currentNode.state)
-            newCost = currentNode.cost + distance(newState,
-                                                  currentNode.state)  # distance(newState, [gx, gy, gz])
+            newCost = nodesExplored[parentkey].cost + distance(newState,
+                                                  nodesExplored[parentkey].state)  # distance(newState, [gx, gy, gz])
 
-            newNode = Node(newState, newCost, currentNode)
+            newNode = Node(newState, newCost, nodesExplored[parentkey])
             # newNode.velocities = [x_dot, y_dot, omega]
             nodesExplored[s] = newNode
 
-            heapq.heappush(q, (newNode.cost, count, newNode))
+            # heapq.heappush(q, (newNode.cost, count, newNode))
             count += 1
+            currentNode = newNode
             print(count)
 
         else:
@@ -211,9 +226,33 @@ def generatePath(q, startEndCoor, nodesExplored, dt, radiusClearance, threshDist
             #     nodesExplored[s].cost = nodesExplored[s].costToCome + distance(newState, [gx, gy, gt])
             #     nodesExplored[s].parent = currentNode
             #     nodesExplored[s].velocities = [x_dot, y_dot, omega]
-            if nodesExplored[s].cost > currentNode.cost + distance(newState, currentNode.state):
-                nodesExplored[s].cost = currentNode.cost + distance(newState, currentNode.state)
-                nodesExplored[s].parent = currentNode
+            if nodesExplored[s].cost > nodesExplored[parentkey].cost + distance(newState, nodesExplored[parentkey].state):
+                nodesExplored[s].cost = nodesExplored[parentkey].cost + distance(newState, nodesExplored[parentkey].state)
+                nodesExplored[s].parent = nodesExplored[parentkey]
+
+        if nodesExplored[s].parent:
+            pt = nodesExplored[s].state[0:2]
+            ptParent = nodesExplored[s].parent.state[0:2]
+            x, y = pt * scale * res
+            x2, y2 = ptParent * scale * res
+
+            # draw explored nodes
+            pygame.draw.line(gameDisplay, white, (x2, y2), (x, y), 1)
+            # pygame.draw.circle(gameDisplay,green,(int(x),int(y)),4)
+            triangle = triangleCoordinates([x2, y2], [x, y], 5)
+            pygame.draw.polygon(gameDisplay, green,
+                                [tuple(triangle[0]), tuple(triangle[1]), tuple(triangle[2])])
+
+        # draw start and goal locations
+        pygame.draw.rect(gameDisplay, blue, (startCoor[0] * res * scale, startCoor[1] * res * scale, res * 2, res * 2))
+
+        pygame.draw.circle(gameDisplay, blue,
+                           (int(goalCoor[0] * res * scale), int(goalCoor[1] * res * scale)),
+                           math.floor(0.3 * res * scale))
+
+        pygame.draw.rect(gameDisplay, white, (goalCoor[0] * res * scale, goalCoor[1] * res * scale,
+                                              res * 2, res * 2))
+        pygame.display.update()
 
     return [False, None]
 
@@ -258,10 +297,10 @@ if __name__ == "__main__":
 
     # iul = 20
     # iur = 20
-    is1 = -4  # -4  #-4
-    is2 = 4  # -4  #-3
-    ig1 = -4  # 4   #0
-    ig2 = -4  # 2.5  #-3
+    is1 = 0  # -4  #-4
+    is2 = 3  # -4  #-3
+    ig1 = 0  # 4   #0
+    ig2 = 2  # 2.5  #-3
     # istartOrientation = 0
     # idt = -1#0.6 #0.8
     # ismoothCoef = -1# 0.2 #0.1
@@ -283,7 +322,7 @@ if __name__ == "__main__":
     # ---------------------------
     #  Precision Parameters
     # ---------------------------
-    threshDistance = 0.1
+    threshDistance = 0.5
     clearance = 0.3
     # threshAngle = 5
 
@@ -357,13 +396,13 @@ if __name__ == "__main__":
     q = []
 
     if not isSafe(startCoor, res, clearance + robotRadius) or not isSafe(goalCoor, res, clearance + robotRadius):
-        pygame.draw.rect(gameDisplay, blue, (startCoor[0] * res * scale, startCoor[1] * res * scale, \
+        pygame.draw.rect(gameDisplay, blue, (startCoor[0] * res * scale, startCoor[1] * res * scale,
                                              res * 2, res * 2))
 
-        pygame.draw.circle(gameDisplay, blue, (int(goalCoor[0] * res * scale), int(goalCoor[1] * res * scale)), \
+        pygame.draw.circle(gameDisplay, blue, (int(goalCoor[0] * res * scale), int(goalCoor[1] * res * scale)),
                            math.floor(0.3 * res * scale))
 
-        pygame.draw.rect(gameDisplay, white, (goalCoor[0] * res * scale, goalCoor[1] * res * scale, \
+        pygame.draw.rect(gameDisplay, white, (goalCoor[0] * res * scale, goalCoor[1] * res * scale,
                                               res * 2, res * 2))
         basicfont = pygame.font.SysFont(None, 48)
         text = basicfont.render('Start or goal position must be in a valid workspace', True, (255, 0, 0),
