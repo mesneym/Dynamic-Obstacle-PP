@@ -80,11 +80,11 @@ def isSafe(newState, r, radiusClearance):
 
 
 def pathIsSafe(pt1, pt2, radiusClearance, temp):
-    t = np.arange(0.2, 1.0, 0.2)
+    t = np.arange(0.2, 1.2, 0.2)
     v = pt2 - pt1
     for i in range(len(t)):
         r = (t[i] * v + pt1)[0:2]
-        if not isSafe(r, 1, radiusClearance):
+        if  isSafe(r, 1, radiusClearance):
             if i == 0:
                 return [True, pt1]
             else:
@@ -122,20 +122,20 @@ def distance(startPosition, goalPosition):
 
 
 def generatePoint():
-    x = rd.uniform(1.0, 5.0)
-    y = rd.uniform(1.0, 5.0)
+    x = rd.uniform(0.0, 10.0)
+    y = rd.uniform(0.0, 10.0)
     return [x, y]
 
 
 def minimumDistance(nodesExplored, newState):
-    min = 15
-    str = ""
+    mininum = 100
+    st = ""
     for key, node in nodesExplored.items():
         dist = distance(node.state, newState)
-        if dist < min:
-            min = dist
-            str = key
-    return str, min
+        if dist < mininum:
+            mininum = dist
+            st = key
+    return st, mininum
 
 
 # generates optimal path for robot

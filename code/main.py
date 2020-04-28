@@ -213,7 +213,6 @@ def drawObstacles(num):
     pass
 
 def drawExploredNodes():
-
     pass
 
 def drawOptimalPath():
@@ -225,6 +224,7 @@ def get_arrow(pt,pt2):
     u,v = pt2-pt
     return x,y,2,u,v,0
 
+
 def update(num,nodesExplored,nList):
     if(nodesExplored[nList[num]].parent):
         global quiver
@@ -232,6 +232,7 @@ def update(num,nodesExplored,nList):
         ptParent = nodesExplored[nList[num]].parent.state[0:2]
         # quiver.remove()
         quiver = ax.quiver(*get_arrow(ptParent,pt))
+        # return quiver
 
 
 fig = plt.figure()
@@ -256,13 +257,13 @@ ax.set_zlabel('Z')
 ax.set_title('workspace')
 ax.set_facecolor('orange')
 
-
 numframes= len(nodesExplored)#+len(solution)
-nList = sorted(nodesExplored.keys())
+nList = list(nodesExplored.keys())
 
-print(numframes)
+# print(numframes)
+# print(type(nList))
 quiver = ax.quiver(*get_arrow(np.array([0,0]),np.array([0,0])))
-ani = animation.FuncAnimation(fig, update,numframes, fargs=(nodesExplored,nList),interval=1, blit=False)
+ani = animation.FuncAnimation(fig, update,numframes, fargs=(nodesExplored,nList),interval=20, blit=False)
 plt.show()
 
 
