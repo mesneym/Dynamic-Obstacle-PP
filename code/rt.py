@@ -130,7 +130,7 @@ def nearestNode(nodesExplored, newState):
 
 
 # generates optimal path for robot
-def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 1000):
+def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 3000):
     
     #get start and goal locations
     sx, sy = startEndCoor[0]
@@ -142,8 +142,9 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 10
     nodesExplored[key] = root
 
 
-    for i in range(numIterations):
-
+    # for i in range(numIterations):
+    
+    while True:
         #sample random point
         newPosX, newPosY = generatePoint()
         newState = np.array([newPosX, newPosY])
@@ -155,20 +156,23 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 10
         #get safe point
         nearestNodeKey,_ = nearestNode(nodesExplored, newState)
         nearestSafePoint = safePointInPath(nodesExplored[nearestNodeKey].state, newState, radiusClearance)
-         
+        
+        if((nearestSafePoint == nodesExplored[nearestNodeKey].state).all()):
+            continue
+                
         #add node to nodesExplored
         newNode = Node(nearestSafePoint, nodesExplored[nearestNodeKey])
         newNode.parent = nodesExplored[nearestNodeKey]
         
         s = str(newNode.state[0]) + str(newNode.state[1])
         nodesExplored[s] = newNode
-
+        
         #print path if goal is reached
         if distance(newNode.state, [gx, gy]) <= 0.3:
             sol = printPath(newNode)
             return [True, sol]
 
-    return [True, None]
+    return [False, None]
 
 
 def triangleCoordinates(start, end, triangleSize = 5):
