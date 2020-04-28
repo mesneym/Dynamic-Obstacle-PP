@@ -87,13 +87,14 @@ def isSafe(newState, r, radiusClearance):
 
 
 def safePointInPath(pt1, pt2, radiusClearance):
-    stepsize = 0.2
+    stepsize = 0.1
     t = np.arange(stepsize, 1.0 + stepsize, stepsize)
     v = pt2 - pt1
-    r = pt1
     for i in range(len(t)):
         r = (t[i] * v + pt1)
-        if i!= 0 and not isSafe(r, 1, radiusClearance):
+        if not isSafe(r, 1, radiusClearance):
+            if i==0:
+                return pt1
             return  t[i-1]*v + pt1
     return r
 
@@ -102,8 +103,7 @@ def printPath(node):
     solution = []
     current = node
     while current:
-        sol = np.append(current.state)
-        solution.append(sol)
+        solution.append(current.state)
         current = current.parent
     return solution
 
@@ -124,13 +124,13 @@ def nearestNode(nodesExplored, newState):
     for key, node in nodesExplored.items():
         dist = distance(node.state, newState)
         if dist < minimum:
-            mininum = dist
+            minimum = dist
             string = key
     return string, minimum
 
 
 # generates optimal path for robot
-def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 100):
+def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 1000):
     
     #get start and goal locations
     sx, sy = startEndCoor[0]
@@ -159,24 +159,33 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 10
         #add node to nodesExplored
         newNode = Node(nearestSafePoint, nodesExplored[nearestNodeKey])
         newNode.parent = nodesExplored[nearestNodeKey]
-        print("========")
-        print(newState)
-        print((newNode))
-        print(newNode.parent)
-        print(newNode.state)
-        print("--------")
         
         s = str(newNode.state[0]) + str(newNode.state[1])
         nodesExplored[s] = newNode
 
         #print path if goal is reached
         if distance(newNode.state, [gx, gy]) <= 0.3:
-            sol = printPath(currentNode)
+            sol = printPath(newNode)
             return [True, sol]
 
-    return [False, None]
+    return [True, None]
 
 
+def triangleCoordinates(start, end, triangleSize = 5):
+    
+    rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi/2
+    # print(math.atan2(start[1] - end[1], end[0] - start[0]))
+    rad = math.pi/180
+
+    coordinateList = np.array([[end[0],end[1]],
+                              [end[0] + triangleSize * math.sin(rotation - 165*rad), end[1] + triangleSize * math.cos(rotation - 165*rad)],
+                              [end[0] + triangleSize * math.sin(rotation + 165*rad), end[1] + triangleSize * math.cos(rotation + 165*rad)]])
+
+    return coordinateList
+
+# if __name__ == '__main__':
+    # newState = np.array([3,9])
+    # print(isSafe(newState,1,0.3))
 
 if __name__ == "__main__":
 
@@ -208,7 +217,7 @@ if __name__ == "__main__":
     #  Precision Parameters
     # ---------------------------
     threshDistance = 0.5
-    clearance = 0.1
+    clearance = 0.4
     # threshAngle = 5
 
     # ---------------------------
@@ -373,5 +382,9 @@ if __name__ == "__main__":
             pygame.time.delay(2000)
 
     pygame.quit()
+
+
+
+
 
 
