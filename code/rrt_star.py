@@ -149,18 +149,14 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 30
         newPosX, newPosY = generatePoint()
         newState = np.array([newPosX, newPosY])
 
-        #check if sample point is in obstacle
-        if(not isSafe(newState,1,radiusClearance)):
-            continue
-       
-        #get safe point
+        #get safe point --steer
         nearestNodeKey,_ = nearestNode(nodesExplored, newState)
         nearestSafePoint = safePointInPath(nodesExplored[nearestNodeKey].state, newState, radiusClearance)
         
         if((nearestSafePoint == nodesExplored[nearestNodeKey].state).all()):
             continue
                 
-        #add node to nodesExplored
+        #add node to nodesExplored --add vertex and edge
         newNode = Node(nearestSafePoint, nodesExplored[nearestNodeKey])
         newNode.parent = nodesExplored[nearestNodeKey]
         
