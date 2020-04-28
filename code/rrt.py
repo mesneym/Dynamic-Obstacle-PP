@@ -1,4 +1,3 @@
-from rrttree import Node
 from collections import deque
 from queue import PriorityQueue
 import heapq
@@ -7,6 +6,13 @@ import math
 import random as rd
 import pygame
 import time
+
+
+
+class Node:
+    def __init__(self, state=None,parent=None):
+        self.state = state
+        self.parent = parent
 
 
 ######################################
@@ -76,49 +82,30 @@ def isSafe(newState, r, radiusClearance):
 
     if newState[0] < 0.0 or newState[0] > col or newState[1] < 0.0 or newState[1] > row:
         return False
-    return isValidWorkspace(newState[0:2], r, radiusClearance)
+    return isValidWorkspace(newState, r, radiusClearance)
 
 
-def pathIsSafe(pt1, pt2, radiusClearance, temp):
-    t = np.arange(0.2, 1.2, 0.2)
+
+def safePointInPath(pt1, pt2, radiusClearance):
+    stepsize = 0.1
+    t = np.arange(stepsize, 1.0 + stepsize, stepsize)
     v = pt2 - pt1
     for i in range(len(t)):
-        r = (t[i] * v + pt1)[0:2]
-        if  isSafe(r, 1, radiusClearance):
-            if i == 0:
-                return [True, pt1]
-            else:
-                return [True, (t[i - 1] * v + pt1)[0:2]]
-    if temp == 1:
-        return [True, pt2]
-    return [True, r]
+        r = (t[i] * v + pt1)
+        if not isSafe(r, 1, radiusClearance):
+            if i==0:
+                return pt1
+            return  t[i-1]*v + pt1
+    return r
 
 
-# prints solution path
 def printPath(node):
     solution = []
     current = node
     while current:
-        sol = np.append(current.state)
-        solution.append(sol)
+        solution.append(current.state)
         current = current.parent
-
     return solution
-
-
-# Normalizing angle and step size
-def normalize(coor, threshDistance):
-    x, y = coor
-    x = round(x / threshDistance) * threshDistance
-    y = round(y / threshDistance) * threshDistance
-    return [x, y]
-
-
-# CalcrobotParams[0]ating the Euclidean distance
-def distance(startPosition, goalPosition):
-    sx, sy = startPosition
-    gx, gy = goalPosition
-    return math.sqrt((gx - sx) ** 2 + (gy - sy) ** 2)
 
 
 def generatePoint():
@@ -126,181 +113,92 @@ def generatePoint():
     y = rd.uniform(0.0, 10.0)
     return [x, y]
 
+def distance(startPosition, goalPosition):
+    sx, sy = startPosition
+    gx, gy = goalPosition
+    return math.sqrt((gx - sx) ** 2 + (gy - sy) ** 2)
 
-def minimumDistance(nodesExplored, newState):
-    mininum = 100
-    st = ""
+
+def nearestNode(nodesExplored, newState):
+    minimum = np.inf
     for key, node in nodesExplored.items():
         dist = distance(node.state, newState)
-        if dist < mininum:
-            mininum = dist
-            st = key
-    return st, mininum
+        if dist < minimum:
+            minimum = dist
+            string = key
+    return string, minimum
 
 
 # generates optimal path for robot
-def generatePath(q, startEndCoor, nodesExplored, dt, radiusClearance, threshDistance=0.1, threshAngle=5):
-    # normalize goal and start positions
-    sx, sy = normalize(startEndCoor[0], threshDistance)
-    gx, gy = normalize(startEndCoor[1], threshDistance)
+def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 3000):
+    
+    #get start and goal locations
+    sx, sy = startEndCoor[0]
+    gx, gy = startEndCoor[1]
 
     # Initializing root node
     key = str(sx) + str(sy)
-    root = Node(np.float32([sx, sy]), 0.0, None)
+    root = Node(np.float32([sx, sy]), None)
     nodesExplored[key] = root
 
-    count = 1
-    # heapq.heappush(q, (root.cost, count, root))
 
-    while True:#len(q) > 0:
-        # print(len(q))
-        # _, _, currentNode = heapq.heappop(q)
-        if count == 1:
-            currentNode = root
-        # print(distance(currentNode.state, [gx, gy]))
-        if distance(currentNode.state, [gx, gy]) <= 0.3:
-            sol = printPath(currentNode)
-            return [True, sol]
-
-            # for actions in range(8):
-            #     x, y, t = currentNode.state
-            #
-            #     # Defining actions based on constraints
-            #     if actions == 0:
-            #         newPosX, newPosY, newOrientation, x_dot, y_dot, omega = constraints(x, y, t, 0, robotParams[0],
-            #                                                                             robotParams, dt)
-            #     elif actions == 1:
-            #         newPosX, newPosY, newOrientation, x_dot, y_dot, omega = constraints(x, y, t, robotParams[0], 0,
-            #                                                                             robotParams, dt)
-            #     elif actions == 2:
-            #         newPosX, newPosY, newOrientation, x_dot, y_dot, omega = constraints(x, y, t, robotParams[0],
-            #                                                                             robotParams[0], robotParams, dt)
-            #     elif actions == 3:
-            #         newPosX, newPosY, newOrientation, x_dot, y_dot, omega = constraints(x, y, t, 0, robotParams[1],
-            #                                                                             robotParams, dt)
-            #     elif actions == 4:
-            #         newPosX, newPosY, newOrientation, x_dot, y_dot, omega = constraints(x, y, t, robotParams[1], 0,
-            #                                                                             robotParams, dt)
-            #     elif actions == 5:
-            #         newPosX, newPosY, newOrientation, x_dot, y_dot, omega = constraints(x, y, t, robotParams[1],
-            #                                                                             robotParams[1], robotParams, dt)
-            #     elif actions == 6:
-            #         newPosX, newPosY, newOrientation, x_dot, y_dot, omega = constraints(x, y, t, robotParams[0],
-            #                                                                             robotParams[1], robotParams, dt)
-            #     elif actions == 7:
-            #         newPosX, newPosY, newOrientation, x_dot, y_dot, omega = constraints(x, y, t, robotParams[1],
-            #                                                                             robotParams[0], robotParams, dt)
-
+    # for i in range(numIterations):
+    
+    while True:
+        #sample random point
         newPosX, newPosY = generatePoint()
-        # print(newPosX, newPosY)
-        newState = np.array([newPosX, newPosY])# np.array(normalize([newPosX, newPosY], threshDistance))
-        s = str(newState[0]) + str(newState[1])
-        parentkey, dist = minimumDistance(nodesExplored, newState)
+        newState = np.array([newPosX, newPosY])
 
-        if s not in nodesExplored:
-            if isSafe(newState, 1, radiusClearance):
-                status = False
-                while not status:
-                    status, newState = pathIsSafe(newState, nodesExplored[parentkey].state, radiusClearance, 1)
-                    # print(status)
-            else:
-                status, newState = pathIsSafe(newState, nodesExplored[parentkey].state, radiusClearance, 0)
-                print(status)
-            # newCostToCome = currentNode.costToCome + distance(newState, currentNode.state)
-            newCost = nodesExplored[parentkey].cost + distance(newState,
-                                                  nodesExplored[parentkey].state)  # distance(newState, [gx, gy, gz])
-
-            newNode = Node(newState, newCost, nodesExplored[parentkey])
-            # newNode.velocities = [x_dot, y_dot, omega]
-            nodesExplored[s] = newNode
-
-            # heapq.heappush(q, (newNode.cost, count, newNode))
-            count += 1
-            currentNode = newNode
-            print(count)
-
-        else:
-            # if (nodesExplored[s].cost > currentNode.costToCome + distance(newState, currentNode.state) + distance(
-            #         newState, [gx, gy, gt])):
-            #     nodesExplored[s].costToCome = currentNode.costToCome + distance(newState, currentNode.state)
-            #     nodesExplored[s].cost = nodesExplored[s].costToCome + distance(newState, [gx, gy, gt])
-            #     nodesExplored[s].parent = currentNode
-            #     nodesExplored[s].velocities = [x_dot, y_dot, omega]
-            if nodesExplored[s].cost > nodesExplored[parentkey].cost + distance(newState, nodesExplored[parentkey].state):
-                nodesExplored[s].cost = nodesExplored[parentkey].cost + distance(newState, nodesExplored[parentkey].state)
-                nodesExplored[s].parent = nodesExplored[parentkey]
-
-        if nodesExplored[s].parent:
-            pt = nodesExplored[s].state[0:2]
-            ptParent = nodesExplored[s].parent.state[0:2]
-            x, y = pt * scale * res
-            x2, y2 = ptParent * scale * res
-
-            # draw explored nodes
-            pygame.draw.line(gameDisplay, white, (x2, y2), (x, y), 1)
-            # pygame.draw.circle(gameDisplay,green,(int(x),int(y)),4)
-            triangle = triangleCoordinates([x2, y2], [x, y], 5)
-            pygame.draw.polygon(gameDisplay, green,
-                                [tuple(triangle[0]), tuple(triangle[1]), tuple(triangle[2])])
-
-        # draw start and goal locations
-        pygame.draw.rect(gameDisplay, blue, (startCoor[0] * res * scale, startCoor[1] * res * scale, res * 2, res * 2))
-
-        pygame.draw.circle(gameDisplay, blue,
-                           (int(goalCoor[0] * res * scale), int(goalCoor[1] * res * scale)),
-                           math.floor(0.3 * res * scale))
-
-        pygame.draw.rect(gameDisplay, white, (goalCoor[0] * res * scale, goalCoor[1] * res * scale,
-                                              res * 2, res * 2))
-        pygame.display.update()
+        #check if sample point is in obstacle
+        if(not isSafe(newState,1,radiusClearance)):
+            continue
+       
+        #get safe point
+        nearestNodeKey,_ = nearestNode(nodesExplored, newState)
+        nearestSafePoint = safePointInPath(nodesExplored[nearestNodeKey].state, newState, radiusClearance)
+        
+        if((nearestSafePoint == nodesExplored[nearestNodeKey].state).all()):
+            continue
+                
+        #add node to nodesExplored
+        newNode = Node(nearestSafePoint, nodesExplored[nearestNodeKey])
+        newNode.parent = nodesExplored[nearestNodeKey]
+        
+        s = str(newNode.state[0]) + str(newNode.state[1])
+        nodesExplored[s] = newNode
+        
+        #print path if goal is reached
+        if distance(newNode.state, [gx, gy]) <= 0.3:
+            sol = printPath(newNode)
+            return [True, sol]
 
     return [False, None]
 
 
-# Functions which defines actions considering the constraints
-def constraints(X0, Y0, Theta0, UL, UR, robotParams, dt):
-    # r = robotParams[2]  # Radius of the wheel
-    # L = robotParams[3]  # Distance between the wheels
-    # smoothCoef = robotParams[4]
-    #
-    # x_dot = r / 2 * (UL + UR) * math.cos(math.radians(Theta0))
-    # y_dot = r / 2 * (UL + UR) * math.sin(math.radians(Theta0))
-    # omega = smoothCoef * (r / L) * (UR - UL)  # The smoothing coefficient limits sharp turns
-    # # smaller value results in smaller angle changes
-    # dx = x_dot * dt
-    # dy = y_dot * dt
-    # dtheta = omega * dt
-    #
-    # Xn = X0 + dx
-    # Yn = Y0 + dy
-    # Thetan = (Theta0 + math.degrees(dtheta)) % 360
-    #
-    # return Xn, Yn, Thetan, x_dot, y_dot, omega
-    pass
-
-
-def triangleCoordinates(start, end, triangleSize=5):
-    rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
+def triangleCoordinates(start, end, triangleSize = 5):
+    
+    rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi/2
     # print(math.atan2(start[1] - end[1], end[0] - start[0]))
-    rad = math.pi / 180
+    rad = math.pi/180
 
-    coordinateList = np.array([[end[0], end[1]],
-                               [end[0] + triangleSize * math.sin(rotation - 165 * rad),
-                                end[1] + triangleSize * math.cos(rotation - 165 * rad)],
-                               [end[0] + triangleSize * math.sin(rotation + 165 * rad),
-                                end[1] + triangleSize * math.cos(rotation + 165 * rad)]])
+    coordinateList = np.array([[end[0],end[1]],
+                              [end[0] + triangleSize * math.sin(rotation - 165*rad), end[1] + triangleSize * math.cos(rotation - 165*rad)],
+                              [end[0] + triangleSize * math.sin(rotation + 165*rad), end[1] + triangleSize * math.cos(rotation + 165*rad)]])
 
     return coordinateList
 
+# if __name__ == '__main__':
+    # newState = np.array([3,9])
+    # print(isSafe(newState,1,0.3))
 
 if __name__ == "__main__":
 
     # iul = 20
     # iur = 20
-    is1 = 0  # -4  #-4
-    is2 = 3  # -4  #-3
-    ig1 = 0  # 4   #0
-    ig2 = 2  # 2.5  #-3
+    is1 = -4  # -4  #-4
+    is2 = -4  # -4  #-3
+    ig1 = 4  # 4   #0
+    ig2 = 4  # 2.5  #-3
     # istartOrientation = 0
     # idt = -1#0.6 #0.8
     # ismoothCoef = -1# 0.2 #0.1
@@ -323,7 +221,7 @@ if __name__ == "__main__":
     #  Precision Parameters
     # ---------------------------
     threshDistance = 0.5
-    clearance = 0.3
+    clearance = 0.4
     # threshAngle = 5
 
     # ---------------------------
@@ -418,9 +316,7 @@ if __name__ == "__main__":
     else:
         startTime = time.time()  # Start time of simulation
         print('Exploring nodes...')
-        success, solution = generatePath(q, startEndCoor, nodesExplored, clearance + robotRadius,
-                                         threshDistance)
-        # print(success)
+        success, solution = generatePath(q, startEndCoor, nodesExplored, clearance + robotRadius)
         endTime = time.time()
 
         #############################################
@@ -490,3 +386,9 @@ if __name__ == "__main__":
             pygame.time.delay(2000)
 
     pygame.quit()
+
+
+
+
+
+
