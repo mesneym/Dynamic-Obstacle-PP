@@ -8,11 +8,11 @@ import pygame
 import time
 
 
-
 class Node:
-    def __init__(self, state=None,parent=None):
+    def __init__(self, state=None, cost=0.0, parent=None):
         self.state = state
         self.parent = parent
+        self.cost = cost
 
 
 ######################################
@@ -85,18 +85,27 @@ def isSafe(newState, r, radiusClearance):
     return isValidWorkspace(newState, r, radiusClearance)
 
 
+def steer(xNearest, xRand):
+    stepsize = 1
+    dist = distance(xNearest, xRand)
+    if dist < stepsize:
+        return xRand
+    else:
+        t = stepsize / dist
+        v = xRand - xNearest
+        r = t * v + xNearest
+        return r
 
-def safePointInPath(pt1, pt2, radiusClearance):
+
+def isObstacleFree(pt1, pt2, radiusClearance):
     stepsize = 0.1
     t = np.arange(stepsize, 1.0 + stepsize, stepsize)
     v = pt2 - pt1
     for i in range(len(t)):
-        r = (t[i] * v + pt1)
+        r = t[i] * v + pt1
         if not isSafe(r, 1, radiusClearance):
-            if i==0:
-                return pt1
-            return  t[i-1]*v + pt1
-    return r
+            return False
+    return True
 
 
 def printPath(node):
@@ -108,10 +117,11 @@ def printPath(node):
     return solution
 
 
-def generatePoint():
+def samplePoint():
     x = rd.uniform(0.0, 10.0)
     y = rd.uniform(0.0, 10.0)
     return [x, y]
+
 
 def distance(startPosition, goalPosition):
     sx, sy = startPosition
@@ -119,51 +129,80 @@ def distance(startPosition, goalPosition):
     return math.sqrt((gx - sx) ** 2 + (gy - sy) ** 2)
 
 
-def nearestNode(nodesExplored, newState):
-    minimum = np.inf
+def nearest(nodesExplored, newState):
+    minDist = np.inf
     for key, node in nodesExplored.items():
         dist = distance(node.state, newState)
-        if dist < minimum:
-            minimum = dist
-            string = key
-    return string, minimum
+        if dist < minDist:
+            minDist = dist
+            minKey = key
+    return minKey, minDist
+
+
+def findNeighbors(NodesExplored, newState, radius=1.0):
+    neighbours = []
+    newX, newY = newState
+    minimum = np.inf
+    string = ""
+
+    for key, node in NodesExplored.items():
+        posX, posY = node.state
+        if (newX - posX) ** 2 + (newY - posY) ** 2.0 - radius ** 2 <= 0:
+            neighbours.append(node)
+            # Finding the best neighbour
+            if minimum > distance(node.state, newState):
+                minimum = distance(node.state, newState)
+                string = key
+    return key, minimum, neighbours
 
 
 # generates optimal path for robot
-def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 3000):
-    
-    #get start and goal locations
+def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=3000):
+    # get start and goal locations
     sx, sy = startEndCoor[0]
     gx, gy = startEndCoor[1]
 
     # Initializing root node
     key = str(sx) + str(sy)
-    root = Node(np.float32([sx, sy]), None)
+    root = Node(np.float32([sx, sy]), 0.0, None)
     nodesExplored[key] = root
 
-
     # for i in range(numIterations):
-    
-    while True:
-        #sample random point
-        newPosX, newPosY = generatePoint()
-        newState = np.array([newPosX, newPosY])
 
-        #get safe point --steer
-        nearestNodeKey,_ = nearestNode(nodesExplored, newState)
-        nearestSafePoint = safePointInPath(nodesExplored[nearestNodeKey].state, newState, radiusClearance)
-        
-        if((nearestSafePoint == nodesExplored[nearestNodeKey].state).all()):
+    while True:
+        # sample random point
+        newPosX, newPosY = samplePoint()
+        xRand = np.array([newPosX, newPosY])
+
+        # Get Nearest Node
+        xNearestKey, xNearestDist = nearest(nodesExplored, xRand)
+        xNearest = nodesExplored[xNearestKey].state
+
+        # steer in direction of path
+        xNew = steer(xNearest, xRand)
+
+        # check if edge is not in obstacle
+        if (xNew == xNearest).all() or not isObstacleFree(xNearest, xNew, radiusClearance):
             continue
-                
-        #add node to nodesExplored --add vertex and edge
-        newNode = Node(nearestSafePoint, nodesExplored[nearestNodeKey])
-        newNode.parent = nodesExplored[nearestNodeKey]
-        
+
+        # Calculating the cost of the new node
+        newCost = distance(xNew, nodesExplored[xNearestKey].state)
+
+        # Finding neighbours
+        bestNeighbourKey, bestNeighbourDist, neighbours = findNeighbors(nodesExplored, xNew)
+
+        # add node to nodesExplored --add vertex and edge
+        newNode = Node(xNew, bestNeighbourDist, nodesExplored[bestNeighbourKey])
+
+        for node in neighbours:
+            if newCost + distance(xNew, node.state) < node.cost:
+                node.cost = newCost + distance(xNew, node.state)
+                node.parent = newNode
+
         s = str(newNode.state[0]) + str(newNode.state[1])
         nodesExplored[s] = newNode
-        
-        #print path if goal is reached
+
+        # print path if goal is reached
         if distance(newNode.state, [gx, gy]) <= 0.3:
             sol = printPath(newNode)
             return [True, sol]
@@ -171,21 +210,23 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 30
     return [False, None]
 
 
-def triangleCoordinates(start, end, triangleSize = 5):
-    
-    rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi/2
+def triangleCoordinates(start, end, triangleSize=5):
+    rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
     # print(math.atan2(start[1] - end[1], end[0] - start[0]))
-    rad = math.pi/180
+    rad = math.pi / 180
 
-    coordinateList = np.array([[end[0],end[1]],
-                              [end[0] + triangleSize * math.sin(rotation - 165*rad), end[1] + triangleSize * math.cos(rotation - 165*rad)],
-                              [end[0] + triangleSize * math.sin(rotation + 165*rad), end[1] + triangleSize * math.cos(rotation + 165*rad)]])
+    coordinateList = np.array([[end[0], end[1]],
+                               [end[0] + triangleSize * math.sin(rotation - 165 * rad),
+                                end[1] + triangleSize * math.cos(rotation - 165 * rad)],
+                               [end[0] + triangleSize * math.sin(rotation + 165 * rad),
+                                end[1] + triangleSize * math.cos(rotation + 165 * rad)]])
 
     return coordinateList
 
+
 # if __name__ == '__main__':
-    # newState = np.array([3,9])
-    # print(isSafe(newState,1,0.3))
+# newState = np.array([3,9])
+# print(isSafe(newState,1,0.3))
 
 if __name__ == "__main__":
 
@@ -193,7 +234,7 @@ if __name__ == "__main__":
     # iur = 20
     is1 = -4  # -4  #-4
     is2 = -4  # -4  #-3
-    ig1 = 4  # 4   #0
+    ig1 = 0  # 4   #0
     ig2 = 4  # 2.5  #-3
     # istartOrientation = 0
     # idt = -1#0.6 #0.8
@@ -382,9 +423,3 @@ if __name__ == "__main__":
             pygame.time.delay(2000)
 
     pygame.quit()
-
-
-
-
-
-
