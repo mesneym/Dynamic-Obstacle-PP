@@ -9,10 +9,11 @@ import time
 
 
 class Node:
-    def __init__(self, state=None, cost=0.0, parent=None):
+    def __init__(self, state=None, cost=0.0, costToCome=0.0, parent=None):
         self.state = state
         self.parent = parent
         self.cost = cost
+        self.costToCome = costToCome
 
 
 ######################################
@@ -86,7 +87,7 @@ def isSafe(newState, r, radiusClearance):
 
 
 def steer(xNearest, xRand):
-    stepsize = 1
+    stepsize = 0.3
     dist = distance(xNearest, xRand)
     if dist < stepsize:
         return xRand
@@ -139,21 +140,32 @@ def nearest(nodesExplored, newState):
     return minKey, minDist
 
 
-def findNeighbors(NodesExplored, newState, radius=1.0):
+def rewiring(bestNeighbour, neighbours, radiusClearance):
+    for node in neighbours:
+        if not np.array_equal(node.state, bestNeighbour.state) and node.parent != node:
+            if isObstacleFree(node.state, bestNeighbour.state, radiusClearance) and \
+                    node.costToCome > bestNeighbour.costToCome + distance(node.state, bestNeighbour.state):
+                node.parent = bestNeighbour
+                node.cost = distance(node.state, bestNeighbour.state)
+                node.costToCome = bestNeighbour.costToCome + node.cost
+
+
+def findNeighbors(NodesExplored, radiusClearance, newNode, radius=2.0):
     neighbours = []
-    newX, newY = newState
-    minimum = np.inf
-    string = ""
+    newX, newY = newNode.state
+    xBest = newNode
 
     for key, node in NodesExplored.items():
         posX, posY = node.state
-        if (newX - posX) ** 2 + (newY - posY) ** 2.0 - radius ** 2 <= 0:
-            neighbours.append(node)
-            # Finding the best neighbour
-            if minimum > distance(node.state, newState):
-                minimum = distance(node.state, newState)
-                string = key
-    return key, minimum, neighbours
+        if (node.state != newNode.state).all() and isObstacleFree(node.state, newNode.state, radiusClearance):
+            if (newX - posX) ** 2 + (newY - posY) ** 2.0 - radius ** 2 <= 0:
+                neighbours.append(node)
+                # Finding the best neighbour
+                tempCost = node.costToCome + distance(node.state, newNode.state)
+                if tempCost < newNode.costToCome:
+                    xBest = node
+
+    return xBest, neighbours
 
 
 # generates optimal path for robot
@@ -164,7 +176,7 @@ def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=
 
     # Initializing root node
     key = str(sx) + str(sy)
-    root = Node(np.float32([sx, sy]), 0.0, None)
+    root = Node(np.float32([sx, sy]), 0.0, 0.0, None)
     nodesExplored[key] = root
 
     # for i in range(numIterations):
@@ -185,27 +197,51 @@ def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=
         if (xNew == xNearest).all() or not isObstacleFree(xNearest, xNew, radiusClearance):
             continue
 
-        # Calculating the cost of the new node
-        newCost = distance(xNew, nodesExplored[xNearestKey].state)
-
-        # Finding neighbours
-        bestNeighbourKey, bestNeighbourDist, neighbours = findNeighbors(nodesExplored, xNew)
-
-        # add node to nodesExplored --add vertex and edge
-        newNode = Node(xNew, bestNeighbourDist, nodesExplored[bestNeighbourKey])
-
-        for node in neighbours:
-            if newCost + distance(xNew, node.state) < node.cost:
-                node.cost = newCost + distance(xNew, node.state)
-                node.parent = newNode
-
+        xNewCost = distance(xNew, xNearest)
+        xNewcostToCome = nodesExplored[xNearestKey].costToCome + xNewCost
+        newNode = Node(xNew, xNewCost, xNewcostToCome, nodesExplored[xNearestKey])
         s = str(newNode.state[0]) + str(newNode.state[1])
         nodesExplored[s] = newNode
 
-        # print path if goal is reached
+        bestNeighbour, neighbours = findNeighbors(nodesExplored, radiusClearance, newNode)
+
+        if (newNode.state == bestNeighbour.state).all():
+            continue
+        newNode.cost = distance(xNew, bestNeighbour.state)
+        newNode.costToCome = bestNeighbour.costToCome + xNewCost
+        newNode.parent = bestNeighbour
+
+        rewiring(bestNeighbour, neighbours, radiusClearance)
+
         if distance(newNode.state, [gx, gy]) <= 0.3:
             sol = printPath(newNode)
             return [True, sol]
+
+        # For exploration 
+        # if nodesExplored[s].parent:
+        #     pt = nodesExplored[s].state[0:2]
+        #     ptParent = nodesExplored[s].parent.state[0:2]
+        #     x, y = pt * scale * res
+        #     x2, y2 = ptParent * scale * res
+        #
+        #     # draw explored nodes
+        #     pygame.draw.line(gameDisplay, white, (x2, y2), (x, y), 1)
+        #     # pygame.draw.circle(gameDisplay,green,(int(x),int(y)),4)
+        #     triangle = triangleCoordinates([x2, y2], [x, y], 5)
+        #     pygame.draw.polygon(gameDisplay, green,
+        #                         [tuple(triangle[0]), tuple(triangle[1]), tuple(triangle[2])])
+        #
+        # # draw start and goal locations
+        # pygame.draw.rect(gameDisplay, blue, (startCoor[0] * res * scale, startCoor[1] * res * scale, \
+        #                                      res * 2, res * 2))
+        #
+        # pygame.draw.circle(gameDisplay, blue,
+        #                    (int(goalCoor[0] * res * scale), int(goalCoor[1] * res * scale)), \
+        #                    math.floor(0.3 * res * scale))
+        #
+        # pygame.draw.rect(gameDisplay, white, (goalCoor[0] * res * scale, goalCoor[1] * res * scale, \
+        #                                       res * 2, res * 2))
+        # pygame.display.update()
 
     return [False, None]
 
@@ -234,7 +270,7 @@ if __name__ == "__main__":
     # iur = 20
     is1 = -4  # -4  #-4
     is2 = -4  # -4  #-3
-    ig1 = 0  # 4   #0
+    ig1 = 4  # 4   #0
     ig2 = 4  # 2.5  #-3
     # istartOrientation = 0
     # idt = -1#0.6 #0.8
