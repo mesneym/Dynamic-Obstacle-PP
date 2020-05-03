@@ -32,58 +32,17 @@ class Arrow3D(FancyArrowPatch):
 #          Workspace
 ######################################
 def isValidWorkspace(pt, r, radiusClearance):
-    x, y = pt
+    x, y, z = pt
 
     # ------------------------------------------------------------------------------
     #                              Circle 1 pts
     # ------------------------------------------------------------------------------
-    ptInCircle1 = (x - math.floor(7 / r)) ** 2 + (y - math.floor(2 / r)) ** 2 - ((1 + radiusClearance) / r) ** 2 <= 0
+    ptInCircle1 = ((3 + radiusClearance) / r) ** 2 >= (x - 5.5) ** 2 + (y - 5.5) ** 2 or \
+                  (x - 5.5) ** 2 + (y - 5.5) ** 2 >= ((4.9 + radiusClearance) / r) ** 2
 
-    # ------------------------------------------------------------------------------
-    #                              Circle 2 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle2 = (x - math.floor(7 / r)) ** 2 + (y - math.floor(8 / r)) ** 2 - ((1 + radiusClearance) / r) ** 2 <= 0
+    pointZ = z < 0 or z > 5
 
-    # ------------------------------------------------------------------------------
-    #                              Circle 3 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle3 = (x - math.floor(5 / r)) ** 2 + (y - math.floor(5 / r)) ** 2.0 - (
-            (1.0 + radiusClearance) / r) ** 2 <= 0
-
-    # ------------------------------------------------------------------------------
-    #                              Circle 4 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle4 = (x - math.floor(3 / r)) ** 2 + (y - math.floor(8 / r)) ** 2.0 - (
-            (1.0 + radiusClearance) / r) ** 2 <= 0
-
-    # --------------------------------------------------------------------------------
-    #                             square 1 pts
-    # --------------------------------------------------------------------------------
-    X = np.float32([2.25, 3.75, 3.75, 2.25]) / r
-    Y = np.float32([1.25, 1.25, 2.75, 2.75]) / r
-    ptInRectangle = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
-                    0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
-                    0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
-
-    # --------------------------------------------------------------------------------
-    #                             Square 2 pts
-    # --------------------------------------------------------------------------------
-    X = np.float32([0.25, 1.75, 1.75, 0.25]) / r
-    Y = np.float32([4.25, 4.25, 5.75, 5.75]) / r
-    ptInSquare1 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
-                  0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
-                  0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
-
-    # --------------------------------------------------------------------------------
-    #                             Square 3 pts
-    # --------------------------------------------------------------------------------
-    X = np.float32([8.25, 9.75, 9.75, 8.25]) / r
-    Y = np.float32([4.25, 4.25, 5.75, 5.75]) / r
-    ptInSquare2 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
-                  0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
-                  0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
-
-    if ptInCircle1 or ptInCircle2 or ptInCircle3 or ptInCircle4 or ptInRectangle or ptInSquare1 or ptInSquare2:
+    if ptInCircle1 or pointZ:
         return False
     return True
 
@@ -156,8 +115,8 @@ def nearest(nodesExplored, newState):
 def rewiring(newNode, neighbours, radiusClearance):
     for node in neighbours:
         if not np.array_equal(node.state, newNode.state) and node.parent != node:
-            # if isObstacleFree(node.state, bestNeighbour.state, radiusClearance) and \
-            if node.costToCome > newNode.costToCome + distance(node.state, newNode.state):
+            if isObstacleFree(node.state, newNode.state, radiusClearance) and \
+                    node.costToCome > newNode.costToCome + distance(node.state, newNode.state):
                 node.parent = newNode
                 node.cost = distance(node.state, newNode.state)
                 node.costToCome = newNode.costToCome + node.cost
@@ -170,7 +129,7 @@ def findNeighbors(NodesExplored, radiusClearance, newNode, radius=2.0):
 
     for key, node in NodesExplored.items():
         posX, posY, posZ = node.state
-        if (node.state != newNode.state).all():  # and isObstacleFree(node.state, newNode.state, radiusClearance):
+        if (node.state != newNode.state).all() and isObstacleFree(node.state, newNode.state, radiusClearance):
             if (newX - posX) ** 2 + (newY - posY) ** 2.0 + (newZ - posZ) ** 2.0 - radius ** 2 <= 0:
                 neighbours.append(node)
                 # Finding the best neighbour
@@ -207,7 +166,7 @@ def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=
         xNew = steer(xNearest, xRand)
 
         # check if edge is not in obstacle
-        if (xNew == xNearest).all():  # or not isObstacleFree(xNearest, xNew, radiusClearance):
+        if (xNew == xNearest).all() or not isObstacleFree(xNearest, xNew, radiusClearance):
             continue
 
         xNewCost = distance(xNew, xNearest)
@@ -253,16 +212,16 @@ def drawEnv():
 
     r1Temp = Rectangle((0.5, 0), height=size_z, width=2, fill=True, linestyle='-', linewidth=5, color='black',
                        alpha=0.2)
-    r1 = Rectangle((0.5, 0), height=size_z, width=2, fill=False, linestyle='-', linewidth=5, color='white')
+    r1 = Rectangle((0.5, 0), height=size_z, width=2, fill=False, linestyle='-', linewidth=5, color='black')
     r2Temp = Rectangle((8.5, 0), height=size_z, width=2, fill=True, linestyle='-', linewidth=5, color='black',
                        alpha=0.2)
-    r2 = Rectangle((8.5, 0), height=size_z, width=2, fill=False, linestyle='-', linewidth=5, color='white')
+    r2 = Rectangle((8.5, 0), height=size_z, width=2, fill=False, linestyle='-', linewidth=5, color='black')
     r3Temp = Rectangle((8.5, 0), height=size_z, width=2, fill=True, linestyle='-', linewidth=5, color='black',
                        alpha=0.2)
-    r3 = Rectangle((8.5, 0), height=size_z, width=2, fill=False, linestyle='-', linewidth=5, color='white')
+    r3 = Rectangle((8.5, 0), height=size_z, width=2, fill=False, linestyle='-', linewidth=5, color='black')
     r4Temp = Rectangle((0.5, 0), height=size_z, width=2, fill=True, linestyle='-', linewidth=5, color='black',
                        alpha=0.2)
-    r4 = Rectangle((0.5, 0), height=size_z, width=2, fill=False, linestyle='-', linewidth=5, color='white')
+    r4 = Rectangle((0.5, 0), height=size_z, width=2, fill=False, linestyle='-', linewidth=5, color='black')
 
     ax.add_patch(r1)
     ax.add_patch(r1Temp)
@@ -308,7 +267,7 @@ def plotExploredNodes(nodesExplored):
             a = Arrow3D([pt[0], ptParent[0]],
                         [pt[1], ptParent[1]],
                         [pt[2], ptParent[2]], mutation_scale=3,
-                        lw=0.5, arrowstyle="-|>", color="blue")
+                        lw=0.8, arrowstyle="-|>", color="blue")
             ax.add_artist(a)
 
 
@@ -317,9 +276,9 @@ def plotPath(solution):
     for i in range(len(solution) - 2, -1, -1):
         pt = solution[i]
         pt1 = solution[i + 1]
-        a = Arrow3D([pt[0], pt1[0]],
-                    [pt[1], pt1[1]],
-                    [pt[2], pt1[2]], mutation_scale=5,
+        a = Arrow3D([pt1[0], pt[0]],
+                    [pt1[1], pt[1]],
+                    [pt1[2], pt[2]], mutation_scale=5,
                     lw=1.5, arrowstyle="-|>", color="red")
         ax.add_artist(a)
 
@@ -341,18 +300,21 @@ def drawStartAndGoal():
 
 
 # if __name__ == "__main__":
-is1 = -4
-is2 = -4
+is1 = -3
+is2 = -3
 is3 = 2
-ig1 = 4
-ig2 = 4
+ig1 = 3
+ig2 = 3
 ig3 = 2
-s1 = 5 + (is1)
-s2 = 5 - (is2)
+s1 = 5.5 + is1
+s2 = 5.5 + is2
 s3 = is3
-g1 = 5 + (ig1)
-g2 = 5 - (ig2)
+g1 = 5.5 + ig1
+g2 = 5.5 + ig2
 g3 = ig3
+print(isValidWorkspace([s1, s2, s3], 1.0, 0))
+print('==========')
+print(isValidWorkspace([g1, g2, g3], 1.0, 0))
 
 # ----------------------------
 #  Display parameters
@@ -389,7 +351,7 @@ ax.set_zlim3d([0.0, size_z])
 ax.set_zlabel('Z')
 
 ax.set_title('workspace')
-ax.set_facecolor('orange')
+ax.set_facecolor('white')
 
 numframes = len(nodesExplored)  # +len(solution)
 nList = sorted(nodesExplored.keys())
