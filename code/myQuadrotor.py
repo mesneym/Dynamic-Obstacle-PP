@@ -1,5 +1,0 @@
-from AerialNavigation/Quadrotor import *
-
-
-
-
