@@ -31,7 +31,7 @@ class Quadrotor():
             # fig.canvas.mpl_connect('key_release_event',
                     # lambda event: [exit(0) if event.key == 'escape' else None])
 
-            self.ax = ax 
+            self.ax = ax
 
         self.update_pose(x, y, z, roll, pitch, yaw)
 
@@ -81,8 +81,15 @@ class Quadrotor():
         self.ax.plot([p3_t[0], p4_t[0]], [p3_t[1], p4_t[1]],
                      [p3_t[2], p4_t[2]], 'r-')
 
-        self.ax.plot(self.x_data, self.y_data, self.z_data, 'b:')
+        self.ax.plot(self.x_data, self.y_data, self.z_data, 'b-',linewidth=2)#,linewidth=3,markersize=10)
+        self.ax.set_xlim3d([0.0, 11.0])
+        self.ax.set_xlabel('X')
 
+        self.ax.set_ylim3d([0.0, 11.0])
+        self.ax.set_ylabel('Y')
+
+        self.ax.set_zlim3d([0.0, 5.0])
+        self.ax.set_zlabel('Z')
 
 
 
