@@ -192,6 +192,29 @@ def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=
     return [False, None]
 
 
+def smoothSolutionPath(solution, smoothCoeff=0.5, tolerance=0.000001, pointWeight=0.5):
+    solution.reverse()
+    newSolution = solution
+    threshold = tolerance
+    while threshold >= tolerance:  # Using Gradient descent
+        threshold = 0.0
+        for i in range(1, len(newSolution) - 1):
+            currentState = solution[i]
+            newCurrentState = newSolution[i]
+            newPreviousState = newSolution[i - 1]
+            newNextState = newSolution[i + 1]
+            newStateCopy = newCurrentState
+
+            newCurrentState += pointWeight * (currentState - newCurrentState) + smoothCoeff * (
+                    newNextState + newPreviousState - 2 * newCurrentState)
+
+            newSolution[i] = newCurrentState  # new smooth path
+            threshold += distance(newCurrentState, newStateCopy)
+    newSolution.reverse()
+    # print(newSolution)
+    return newSolution
+
+
 def drawEnv():
     c2 = Circle((size_x / 2, size_y / 2), 3, fill=True, linestyle='-', linewidth=5, color='black', alpha=0.2)
     c3 = Circle((size_x / 2, size_y / 2), 5, fill=True, linestyle='-', linewidth=5, fc='black', ec='black', alpha=0.2)
@@ -338,6 +361,7 @@ ax = fig.add_subplot(111, projection='3d')
 q = []
 nodesExplored = {}
 success, solution = generatePath(q, startEndCoor, nodesExplored, 0)
+smoothsol = smoothSolutionPath(solution)
 drawEnv()
 drawStartAndGoal()
 
@@ -358,5 +382,5 @@ nList = sorted(nodesExplored.keys())
 
 # quiver = ax.quiver(*get_arrow(np.array([0, 0]), np.array([0, 0])))
 plotExploredNodes(nodesExplored)
-plotPath(solution)
+plotPath(smoothsol)
 plt.show()

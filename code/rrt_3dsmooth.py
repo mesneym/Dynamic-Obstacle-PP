@@ -9,11 +9,9 @@ import random as rd
 
 
 class Node:
-    def __init__(self, state=None, cost=0.0, costToCome=0.0, parent=None):
+    def __init__(self, state=None, parent=None):
         self.state = state
         self.parent = parent
-        self.cost = cost
-        self.costToCome = costToCome
 
 
 class Arrow3D(FancyArrowPatch):
@@ -58,9 +56,9 @@ def isSafe(newState, r, radiusClearance):
 
 
 def steer(xNearest, xRand):
-    stepsize = 0.2
+    stepsize = 0.8
     dist = distance(xNearest, xRand)
-    if dist < stepsize:
+    if (dist < stepsize):
         return xRand
     else:
         t = stepsize / dist
@@ -112,54 +110,24 @@ def nearest(nodesExplored, newState):
     return minKey, minDist
 
 
-def rewiring(newNode, neighbours, radiusClearance):
-    for node in neighbours:
-        if not np.array_equal(node.state, newNode.state) and node.parent != node:
-            if isObstacleFree(node.state, newNode.state, radiusClearance) and \
-                    node.costToCome > newNode.costToCome + distance(node.state, newNode.state):
-                node.parent = newNode
-                node.cost = distance(node.state, newNode.state)
-                node.costToCome = newNode.costToCome + node.cost
-
-
-def findNeighbors(NodesExplored, radiusClearance, newNode, radius=2.0):
-    neighbours = []
-    newX, newY, newZ = newNode.state
-    xBest = newNode
-
-    for key, node in NodesExplored.items():
-        posX, posY, posZ = node.state
-        if (node.state != newNode.state).all() and isObstacleFree(node.state, newNode.state, radiusClearance):
-            if (newX - posX) ** 2 + (newY - posY) ** 2.0 + (newZ - posZ) ** 2.0 - radius ** 2 <= 0:
-                neighbours.append(node)
-                # Finding the best neighbour
-                tempCost = node.costToCome + distance(node.state, newNode.state)
-                if tempCost < newNode.costToCome:
-                    xBest = node
-
-    return xBest, neighbours
-
-
-# generates optimal path for robot
-def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=3000):
+def generatePath(q, startEndCoor, nodesExplored, radiusClearance):
     # get start and goal locations
     sx, sy, sz = startEndCoor[0]
     gx, gy, gz = startEndCoor[1]
 
     # Initializing root node
     key = str(sx) + str(sy) + str(sz)
-    root = Node(np.float32([sx, sy, sz]), 0.0, 0.0, None)
+    root = Node(np.float32([sx, sy, sz]), None)
     nodesExplored[key] = root
 
     # for i in range(numIterations):
-
     while True:
         # sample random point
         newPosX, newPosY, newPosZ = samplePoint()
         xRand = np.array([newPosX, newPosY, newPosZ])
 
         # Get Nearest Node
-        xNearestKey, xNearestDist = nearest(nodesExplored, xRand)
+        xNearestKey, _ = nearest(nodesExplored, xRand)
         xNearest = nodesExplored[xNearestKey].state
 
         # steer in direction of path
@@ -169,27 +137,40 @@ def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=
         if (xNew == xNearest).all() or not isObstacleFree(xNearest, xNew, radiusClearance):
             continue
 
-        xNewCost = distance(xNew, xNearest)
-        xNewcostToCome = nodesExplored[xNearestKey].costToCome + xNewCost
-        newNode = Node(xNew, xNewCost, xNewcostToCome, nodesExplored[xNearestKey])
+        # add node to nodesExplored(add vertex and edge)
+        newNode = Node(xNew, nodesExplored[xNearestKey])
         s = str(newNode.state[0]) + str(newNode.state[1]) + str(newNode.state[2])
         nodesExplored[s] = newNode
 
-        bestNeighbour, neighbours = findNeighbors(nodesExplored, radiusClearance, newNode)
-
-        if (newNode.state == bestNeighbour.state).all():
-            continue
-        newNode.cost = distance(xNew, bestNeighbour.state)
-        newNode.costToCome = bestNeighbour.costToCome + xNewCost
-        newNode.parent = bestNeighbour
-
-        rewiring(newNode, neighbours, radiusClearance)
-
+        # print path if goal is reached
         if distance(newNode.state, [gx, gy, gz]) <= 0.5:
             sol = printPath(newNode)
             return [True, sol]
 
     return [False, None]
+
+
+def smoothSolutionPath(solution, smoothCoeff=0.5, tolerance=0.000001, pointWeight=0.5):
+    solution.reverse()
+    newSolution = solution
+    threshold = tolerance
+    while threshold >= tolerance:  # Using Gradient descent
+        threshold = 0.0
+        for i in range(1, len(newSolution) - 1):
+            currentState = solution[i]
+            newCurrentState = newSolution[i]
+            newPreviousState = newSolution[i - 1]
+            newNextState = newSolution[i + 1]
+            newStateCopy = newCurrentState
+
+            newCurrentState += pointWeight * (currentState - newCurrentState) + smoothCoeff * (
+                    newNextState + newPreviousState - 2 * newCurrentState)
+
+            newSolution[i] = newCurrentState  # new smooth path
+            threshold += distance(newCurrentState, newStateCopy)
+    newSolution.reverse()
+    # print(newSolution)
+    return newSolution
 
 
 def drawEnv():
@@ -278,7 +259,7 @@ def plotPath(solution):
         pt1 = solution[i + 1]
         a = Arrow3D([pt1[0], pt[0]],
                     [pt1[1], pt[1]],
-                    [pt1[2], pt[2]], mutation_scale=5,
+                    [pt1[2], pt[2]], mutation_scale=7,
                     lw=1.5, arrowstyle="-|>", color="red")
         ax.add_artist(a)
 
@@ -312,9 +293,6 @@ s3 = is3
 g1 = 5.5 + ig1
 g2 = 5.5 + ig2
 g3 = ig3
-print(isValidWorkspace([s1, s2, s3], 1.0, 0))
-print('==========')
-print(isValidWorkspace([g1, g2, g3], 1.0, 0))
 
 # ----------------------------
 #  Display parameters
@@ -338,6 +316,7 @@ ax = fig.add_subplot(111, projection='3d')
 q = []
 nodesExplored = {}
 success, solution = generatePath(q, startEndCoor, nodesExplored, 0)
+smoothsol = smoothSolutionPath(solution)
 drawEnv()
 drawStartAndGoal()
 
@@ -358,5 +337,5 @@ nList = sorted(nodesExplored.keys())
 
 # quiver = ax.quiver(*get_arrow(np.array([0, 0]), np.array([0, 0])))
 plotExploredNodes(nodesExplored)
-plotPath(solution)
+plotPath(smoothsol)
 plt.show()
