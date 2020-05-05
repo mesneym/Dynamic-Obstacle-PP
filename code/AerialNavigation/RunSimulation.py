@@ -7,7 +7,7 @@ def followPath(Q,solution):
     drawEnv(size_x,size_y,size_z,ax)
     for i in range(len(solution)):
         ax.cla()
-        drawEnv(size_x,size_y,size_z,ax)
+        # drawEnv(size_x,size_y,size_z,ax)
         Q.update_pose(solution[i][0],solution[i][1],solution[i][2],0,0,0)
         plt.pause(0.01)
 
@@ -22,10 +22,12 @@ def runSim():
 
     plotExploredNodes(nodesExplored,ax2)
     plotPath(solution,ax2)
-    plt.show()
     
-    # followPath(Q,solution)
+    followPath(Q,solution)
+    plt.show()
 
+    # for artist in plt.gca().collections:#plt.gca().lines:
+         # artist.remove()
 
 
 #-----------------------------------------------
