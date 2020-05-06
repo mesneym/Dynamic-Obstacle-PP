@@ -215,7 +215,7 @@ def smoothSolutionPath(solution, smoothCoeff=0.5, tolerance=0.000001, pointWeigh
     return newSolution
 
 
-def drawEnv():
+def drawEnv(size_x,size_y,size_z,ax):
     c2 = Circle((size_x / 2, size_y / 2), 3, fill=True, linestyle='-', linewidth=5, color='black', alpha=0.2)
     c3 = Circle((size_x / 2, size_y / 2), 5, fill=True, linestyle='-', linewidth=5, fc='black', ec='black', alpha=0.2)
     c1 = Circle((size_x / 2, size_y / 2), 4, fill=False, linestyle='--', linewidth=5, color='white')
@@ -277,7 +277,7 @@ def get_arrow(pt, pt2):
     return x, y, z, u, v, w
 
 
-def plotExploredNodes(nodesExplored):
+def plotExploredNodes(nodesExplored, ax):
     # if nodesExplored[nList[num]].parent:
     for s in nodesExplored:
         if nodesExplored[s].parent:
@@ -294,14 +294,14 @@ def plotExploredNodes(nodesExplored):
             ax.add_artist(a)
 
 
-def plotPath(solution):
+def plotPath(solution, ax):
     # draw solution path
     for i in range(len(solution) - 2, -1, -1):
         pt = solution[i]
         pt1 = solution[i + 1]
-        a = Arrow3D([pt1[0], pt[0]],
-                    [pt1[1], pt[1]],
-                    [pt1[2], pt[2]], mutation_scale=5,
+        a = Arrow3D([pt[0], pt1[0]],
+                    [pt[1], pt1[1]],
+                    [pt[2], pt1[2]], mutation_scale=5,
                     lw=1.5, arrowstyle="-|>", color="red")
         ax.add_artist(a)
 
@@ -322,65 +322,63 @@ def drawStartAndGoal():
     ax.plot_surface(gx, gy, gz, color='orange')
 
 
-# if __name__ == "__main__":
-is1 = -3
-is2 = -3
-is3 = 2
-ig1 = 3
-ig2 = 3
-ig3 = 2
-s1 = 5.5 + is1
-s2 = 5.5 + is2
-s3 = is3
-g1 = 5.5 + ig1
-g2 = 5.5 + ig2
-g3 = ig3
-print(isValidWorkspace([s1, s2, s3], 1.0, 0))
-print('==========')
-print(isValidWorkspace([g1, g2, g3], 1.0, 0))
+if __name__ == "__main__":
+    is1 = -3
+    is2 = -3
+    is3 = 2
+    ig1 = 3
+    ig2 = 3
+    ig3 = 2
+    s1 = 5.5 + is1
+    s2 = 5.5 + is2
+    s3 = is3
+    g1 = 5.5 + ig1
+    g2 = 5.5 + ig2
+    g3 = ig3
 
-# ----------------------------
-#  Display parameters
-# ----------------------------
-size_x = 11.0
-size_y = 11.0
-size_z = 5.0
+    # ----------------------------
+    #  Display parameters
+    # ----------------------------
+    size_x = 11.0
+    size_y = 11.0
+    size_z = 5.0
 
-# ----------------------------
-# Start and goal coordinates
-# ----------------------------
-res = 1
-startCoor = np.float32((np.float32([s1, s2, s3])) / res)
-goalCoor = np.float32((np.float32([g1, g2, g3])) / res)
+    # ----------------------------
+    # Start and goal coordinates
+    # ----------------------------
+    res = 1
+    startCoor = np.float32((np.float32([s1, s2, s3])) / res)
+    goalCoor = np.float32((np.float32([g1, g2, g3])) / res)
 
-startEndCoor = [startCoor, goalCoor]
+    startEndCoor = [startCoor, goalCoor]
+    print(startEndCoor)
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
 
-q = []
-nodesExplored = {}
-success, solution = generatePath(q, startEndCoor, nodesExplored, 0)
-smoothsol = smoothSolutionPath(solution)
-drawEnv()
-drawStartAndGoal()
+    q = []
+    nodesExplored = {}
+    success, solution = generatePath(q, startEndCoor, nodesExplored, 1)
+    solution = smoothSolutionPath(solution)
+    drawEnv(size_x,size_y,size_z,ax)
+    drawStartAndGoal()
 
-ax.set_xlim3d([0.0, size_x])
-ax.set_xlabel('X')
+    ax.set_xlim3d([0.0, size_x])
+    ax.set_xlabel('X')
 
-ax.set_ylim3d([0.0, size_y])
-ax.set_ylabel('Y')
+    ax.set_ylim3d([0.0, size_y])
+    ax.set_ylabel('Y')
 
-ax.set_zlim3d([0.0, size_z])
-ax.set_zlabel('Z')
+    ax.set_zlim3d([0.0, size_z])
+    ax.set_zlabel('Z')
 
-ax.set_title('workspace')
-ax.set_facecolor('white')
+    ax.set_title('workspace')
+    ax.set_facecolor('white')
 
-numframes = len(nodesExplored)  # +len(solution)
-nList = sorted(nodesExplored.keys())
+    numframes = len(nodesExplored)  # +len(solution)
+    nList = sorted(nodesExplored.keys())
 
-# quiver = ax.quiver(*get_arrow(np.array([0, 0]), np.array([0, 0])))
-plotExploredNodes(nodesExplored)
-plotPath(smoothsol)
-plt.show()
+    # quiver = ax.quiver(*get_arrow(np.array([0, 0]), np.array([0, 0])))
+    plotExploredNodes(nodesExplored)
+    plotPath(solution)
+    plt.show()
