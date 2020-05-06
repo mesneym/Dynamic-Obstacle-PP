@@ -14,7 +14,7 @@ import matplotlib.animation as animation
 import mpl_toolkits.mplot3d.art3d as art3d
 
 class Quadrotor():
-    def __init__(self, ax, x=0, y=0, z=0, roll=0, pitch=0, yaw=0,size=0.25,show_animation=True):
+    def __init__(self, ax, x=0, y=0, z=0, roll=0, pitch=0, yaw=0,size=0.25,show_animation=True,show_path = True):
         self.p1 = np.array([size / 2, 0, 0, 1]).T
         self.p2 = np.array([-size / 2, 0, 0, 1]).T
         self.p3 = np.array([0, size / 2, 0, 1]).T
@@ -33,6 +33,7 @@ class Quadrotor():
 
             self.ax = ax
 
+        self.show_path = show_path
         self.update_pose(x, y, z, roll, pitch, yaw)
 
     def update_pose(self, x, y, z, roll, pitch, yaw):
@@ -81,7 +82,8 @@ class Quadrotor():
         self.ax.plot([p3_t[0], p4_t[0]], [p3_t[1], p4_t[1]],
                      [p3_t[2], p4_t[2]], 'r-')
 
-        self.ax.plot(self.x_data, self.y_data, self.z_data, 'b-',linewidth=2)#,linewidth=3,markersize=10)
+        if(self.show_path):
+            self.ax.plot(self.x_data, self.y_data, self.z_data, 'b-',linewidth=2)#,linewidth=3,markersize=10)
         self.ax.set_xlim3d([0.0, 11.0])
         self.ax.set_xlabel('X')
 

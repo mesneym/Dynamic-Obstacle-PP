@@ -1,15 +1,35 @@
 from Quadrotor import *
+from Obstacles import *
 from rrt_3d import *
 
 
-def followPath(Q, solution):
+def followPath(Q, solution,O):
     drawEnv(size_x, size_y, size_z, ax)
     for i in range(len(solution)):
         ax.cla()
         drawEnv(size_x,size_y,size_z,ax)
+        moveObstacles(O)
         Q.update_pose(solution[i][0], solution[i][1], solution[i][2], 0, 0, 0)
         plt.pause(0.01)
 
+def moveObstacles(obstacles):
+    for i in range(len(obstacles)):
+        obstacles[i].move()
+
+def pathObstruction(O,Q,solution):
+    for i in range(O):
+        Opos = np.array([O[i].x,O[i].y,O[i].z])
+        Qpos = np.array([Q[i].x,Q[i].y,Q[i].z])
+        obDist = np.sqrt(np.sum((Qpos - Opos)**2))
+        
+    for i in range(solution):
+        solpos = np.array(sol[i])
+        Qpos = np.array([Q[i].x,Q[i].y,Q[i].z])
+        solDist = np.sqrt(np.sum((Qpos - solpos)**2))
+
+def replan():
+    pass
+    
 
 def runSim():
     nodesExplored = {}
@@ -19,11 +39,17 @@ def runSim():
     Q = Quadrotor(ax, x=s1, y=s2, z=s3, roll=roll,
                   pitch=pitch, yaw=yaw, size=1, show_animation=show_animation)
 
+    O = {}
+    region = [[0, 5, 0, 5],[6, 10, 0, 5],[0, 5, 6, 10],[6, 10, 6, 10]]
+    for i in range(4):
+       O[i] = Obstacles(ax, x=region[i][0], y=region[i][3], z=2.5, roll=roll,
+                  pitch=pitch, yaw=yaw, size=1, show_animation=show_animation,region = region[i])
+
+
     plotExploredNodes(nodesExplored, ax2)
     plotPath(solution, ax2)
 
-    followPath(Q, solution)
-    plt.show()
+    followPath(Q, solution,O)
 
     # for artist in plt.gca().collections:#plt.gca().lines:
     # artist.remove()
