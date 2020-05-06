@@ -1,73 +1,69 @@
 from Quadrotor import *
 from Obstacles import *
 from rrt_3d import *
-import numpy as np
 
-def collisionCheck(Obs, Obsindex, Q):
-    Obsvec = np.array(Obs[Obsindex].x_data[-1], Obs[Obsindex].y_data[-1], Obs[Obsindex].z_data[-1]) - \
-             np.array(Obs[Obsindex].x_data[-2], Obs[Obsindex].y_data[-2], Obs[Obsindex].z_data[-2])
-
-    Qvec = np.array(Q.x_data[-1], Q.y_data[-1], Q.z_data[-1]) - np.array(Q.x_data[-2], Q.y_data[-2], Q.z_data[-2])
-    angle = np.dot(Obsvec, Qvec.T) / (np.linalg.norm(Obsvec) * np.linalg.norm(Qvec))
-    if -0.88387747318 < angle < 0.69925080647:
-        return True
-    return False
-
-
-def pathObstruction(O, Q, solution):
-    Qpos = np.array(Q.x_data[-1], Q.y_data[-1], Q.z_data[-1])
-    # for i in range(len(O)):
-    #     # Opos = np.array([O[i].x, O[i].y, O[i].z])
-    #     # Qpos = np.array([Q[i].x, Q[i].y, Q[i].z])
-    #     # obDist = np.sqrt(np.sum((Qpos - Opos) ** 2))
-    #     Opos.append(np.array([O[i].x, O[i].y, O[i].z]))
-
-    for i in range(len(solution)):
-        for j in range(len(O)):
-            Opos = np.array([O[j].x, O[j].y, O[j].z])
-            solpos = np.array(solution[i])
-            solDist = np.sqrt(np.sum((solpos - Opos) ** 2))
-            if solDist < 1:
-                if np.sqrt(np.sum((Qpos - Opos) ** 2)) < 1:
-                    return collisionCheck(O, j, Q)
-    return False
-
-
-def replan(q, startCoor, GoalCoor, nodesExplored, radiusClearance):
-    startEndCoor = [startCoor, GoalCoor]
-    solution = generatePath(q, startEndCoor, nodesExplored, radiusClearance)
-    ax2.cla()
-    plotExploredNodes(nodesExplored, ax2)
-    plotPath(solution, ax2)
-    return solution
-
-def followPath(Q, solution, O, q, nodesExplored, radiusClearance):
-    N = len(solution) ; i = 0
-    print(N)
-    drawEnv(size_x, size_y, size_z, ax)
-
-    while i>N:
-        ax.cla()
-        drawEnv(size_x,size_y,size_z,ax)
-        moveObstacles(O)
-        Q.update_pose(solution[i][0], solution[i][1], solution[i][2], 0, 0, 0)
-        plt.pause(0.01)
-
-        # ax.cla()
-        # drawEnv(size_x, size_y, size_z, ax)
-        # moveObstacles(O)
-        # if i == 5:
-            # solution = replan(q, solution[i], solution[-1], nodesExplored, radiusClearance)
-            # i = 0
-
-        # Q.update_pose(solution[i][0], solution[i][1], solution[i][2], 0, 0, 0)
-        # i += 1
-        # plt.pause(0.01)
 
 
 def moveObstacles(obstacles):
     for i in range(len(obstacles)):
         obstacles[i].move()
+
+def pathObstruction(O,Q,solution):
+    for i in range(O):
+        Opos = np.array([O[i].x,O[i].y,O[i].z])
+        Qpos = np.array([Q[i].x,Q[i].y,Q[i].z])
+        obDist = np.sqrt(np.sum((Qpos - Opos)**2))
+        
+    for i in range(solution):
+        solpos = np.array(sol[i])
+        Qpos = np.array([Q[i].x,Q[i].y,Q[i].z])
+        solDist = np.sqrt(np.sum((Qpos - solpos)**2))
+
+
+def replan(q, startCoor, GoalCoor, nodesExplored, radiusClearance):
+    startEndCoor = [startCoor, GoalCoor]
+    success,solution = generatePath(q, startEndCoor, nodesExplored, radiusClearance)
+    resetEnv()
+    plt.pause(0.01)
+    plotExploredNodes(nodesExplored, ax2)
+    plotPath(solution, ax2)
+    plt.pause(0.01)
+    return success,solution
+
+
+def resetEnv():
+    ax2.cla()
+    ax2.set_xlim3d([0.0, size_x])
+    ax2.set_xlabel('X')
+
+    ax2.set_ylim3d([0.0, size_y])
+    ax2.set_ylabel('Y')
+
+    ax2.set_zlim3d([0.0, size_z])
+    ax2.set_zlabel('Z')
+
+    ax2.set_title('ExploredNodes')
+    ax2.set_facecolor('white')
+    drawEnv(size_x,size_y,size_z,ax2)
+
+
+
+def followPath(Q, solution, O, q, nodesExplored, radiusClearance):
+    drawEnv(size_x, size_y, size_z, ax)
+    N = len(solution); i = 0;
+
+    while i<N:
+        ax.cla()
+        drawEnv(size_x,size_y,size_z,ax)
+        moveObstacles(O)
+        Q.update_pose(solution[i][0], solution[i][1], solution[i][2], 0, 0, 0)
+
+        if i == 5:
+            success,solution = replan(q, solution[i], solution[-1], nodesExplored, radiusClearance)
+            i = 0
+
+        plt.pause(0.01)
+        i += 1 
 
 
 def runSim():
@@ -83,6 +79,7 @@ def runSim():
     for i in range(4):
        O[i] = Obstacles(ax, x=region[i][0], y=region[i][3], z=2.5, roll=roll,
                   pitch=pitch, yaw=yaw, size=1, show_animation=show_animation,region = region[i])
+
 
     plotExploredNodes(nodesExplored, ax2)
     plotPath(solution, ax2)
@@ -163,4 +160,7 @@ drawEnv(size_x, size_y, size_z, ax)
 # -----------------------------
 if __name__ == '__main__':
     runSim()
+
+
+
 
