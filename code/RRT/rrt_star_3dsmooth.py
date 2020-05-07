@@ -382,3 +382,6 @@ if __name__ == "__main__":
     plotExploredNodes(nodesExplored)
     plotPath(solution)
     plt.show()
+
+
+
