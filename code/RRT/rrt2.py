@@ -8,9 +8,8 @@ import pygame
 import time
 
 
-
 class Node:
-    def __init__(self, state=None,parent=None):
+    def __init__(self, state=None, parent=None):
         self.state = state
         self.parent = parent
 
@@ -24,77 +23,71 @@ def isValidWorkspace(pt, r, radiusClearance):
     # ------------------------------------------------------------------------------
     #                              Circle 1 pts
     # ------------------------------------------------------------------------------
-    ptInCircle1 = (x - math.floor(7 / r)) ** 2 + (y - math.floor(2 / r)) ** 2 - ((1 + radiusClearance) / r) ** 2 <= 0
-
-    # ------------------------------------------------------------------------------
-    #                              Circle 2 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle2 = (x - math.floor(7 / r)) ** 2 + (y - math.floor(8 / r)) ** 2 - ((1 + radiusClearance) / r) ** 2 <= 0
-
-    # ------------------------------------------------------------------------------
-    #                              Circle 3 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle3 = (x - math.floor(5 / r)) ** 2 + (y - math.floor(5 / r)) ** 2.0 - (
-            (1.0 + radiusClearance) / r) ** 2 <= 0
-
-    # ------------------------------------------------------------------------------
-    #                              Circle 4 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle4 = (x - math.floor(3 / r)) ** 2 + (y - math.floor(8 / r)) ** 2.0 - (
-            (1.0 + radiusClearance) / r) ** 2 <= 0
+    ptInCircle1 = (x - 5.5 / r) ** 2 + (y - 5.5 / r) ** 2 - (
+                (3.2 + radiusClearance) / r) ** 2 <= 0
 
     # --------------------------------------------------------------------------------
     #                             square 1 pts
     # --------------------------------------------------------------------------------
-    X = np.float32([2.25, 3.75, 3.75, 2.25]) / r
-    Y = np.float32([1.25, 1.25, 2.75, 2.75]) / r
-    ptInRectangle = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
-                    0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
-                    0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
+    X = np.float32([0.5, 2.5, 2.5, 0.5]) / r
+    Y = np.float32([4.5, 4.5, 6.5, 6.5]) / r
+    ptInSquare1 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
+                  0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
+                  0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
 
     # --------------------------------------------------------------------------------
     #                             Square 2 pts
     # --------------------------------------------------------------------------------
-    X = np.float32([0.25, 1.75, 1.75, 0.25]) / r
-    Y = np.float32([4.25, 4.25, 5.75, 5.75]) / r
-    ptInSquare1 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
+    X = np.float32([8.5, 10.5, 10.5, 8.5]) / r
+    Y = np.float32([4.5, 4.5, 6.5, 6.5]) / r
+    ptInSquare2 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
                   0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
                   0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
 
     # --------------------------------------------------------------------------------
     #                             Square 3 pts
     # --------------------------------------------------------------------------------
-    X = np.float32([8.25, 9.75, 9.75, 8.25]) / r
-    Y = np.float32([4.25, 4.25, 5.75, 5.75]) / r
-    ptInSquare2 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
+    X = np.float32([4.5, 6.5, 6.5, 4.5]) / r
+    Y = np.float32([0.5, 0.5, 2.5, 2.5]) / r
+    ptInSquare3 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
                   0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
                   0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
 
-    if ptInCircle1 or ptInCircle2 or ptInCircle3 or ptInCircle4 or ptInRectangle or ptInSquare1 or ptInSquare2:
+    # --------------------------------------------------------------------------------
+    #                             Square 4 pts
+    # --------------------------------------------------------------------------------
+    X = np.float32([4.5, 6.5, 6.5, 4.5]) / r
+    Y = np.float32([8.5, 8.5, 10.5, 10.5]) / r
+    ptInSquare4 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
+                  0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
+                  0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
+
+    if ptInCircle1 or ptInSquare1 or ptInSquare2 or ptInSquare3 or ptInSquare4:
         return False
     return True
 
 
 # checks whether next action is near an obstacle or ill defined
 def isSafe(newState, r, radiusClearance):
-    col = float(10 / r)
-    row = float(10 / r)
+    col = float(11 / r)
+    row = float(11 / r)
 
     if newState[0] < 0.0 or newState[0] > col or newState[1] < 0.0 or newState[1] > row:
         return False
     return isValidWorkspace(newState, r, radiusClearance)
 
 
-def steer(xNearest,xRand):
-    stepsize = 1
-    dist = distance(xNearest,xRand) 
-    if (dist<stepsize):
+def steer(xNearest, xRand):
+    stepsize = 0.5
+    dist = distance(xNearest, xRand)
+    if (dist < stepsize):
         return xRand
     else:
-        t = stepsize/dist
+        t = stepsize / dist
         v = xRand - xNearest
-        r = t*v + xNearest
+        r = t * v + xNearest
         return r
+
 
 def isObstacleFree(pt1, pt2, radiusClearance):
     stepsize = 0.1
@@ -117,9 +110,10 @@ def printPath(node):
 
 
 def samplePoint():
-    x = rd.uniform(0.0, 10.0)
-    y = rd.uniform(0.0, 10.0)
+    x = rd.uniform(0.0, 11.0)
+    y = rd.uniform(0.0, 11.0)
     return [x, y]
+
 
 def distance(startPosition, goalPosition):
     sx, sy = startPosition
@@ -137,9 +131,8 @@ def nearest(nodesExplored, newState):
     return minKey, minDist
 
 
-def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 3000):
-    
-    #get start and goal locations
+def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=3000):
+    # get start and goal locations
     sx, sy = startEndCoor[0]
     gx, gy = startEndCoor[1]
 
@@ -149,27 +142,27 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 30
     nodesExplored[key] = root
 
     for i in range(numIterations):
-        #sample random point
+        # sample random point
         newPosX, newPosY = samplePoint()
         xRand = np.array([newPosX, newPosY])
-        
-        #Get Nearest Node
-        xNearestKey,_ = nearest(nodesExplored, xRand)
+
+        # Get Nearest Node
+        xNearestKey, _ = nearest(nodesExplored, xRand)
         xNearest = nodesExplored[xNearestKey].state
 
-        #steer in direction of path
+        # steer in direction of path
         xNew = steer(xNearest, xRand)
-        
-        #check if edge is not in obstacle
-        if((xNew == xNearest).all() or not isObstacleFree(xNearest, xNew,radiusClearance)):
+
+        # check if edge is not in obstacle
+        if (xNew == xNearest).all() or not isObstacleFree(xNearest, xNew, radiusClearance):
             continue
-                
-        #add node to nodesExplored(add vertex and edge)
+
+        # add node to nodesExplored(add vertex and edge)
         newNode = Node(xNew, nodesExplored[xNearestKey])
         s = str(newNode.state[0]) + str(newNode.state[1])
         nodesExplored[s] = newNode
-        
-        #print path if goal is reached
+
+        # print path if goal is reached
         if distance(newNode.state, [gx, gy]) <= 0.3:
             sol = printPath(newNode)
             return [True, sol]
@@ -177,21 +170,23 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 30
     return [False, None]
 
 
-def triangleCoordinates(start, end, triangleSize = 5):
-    
-    rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi/2
+def triangleCoordinates(start, end, triangleSize=5):
+    rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi / 2
     # print(math.atan2(start[1] - end[1], end[0] - start[0]))
-    rad = math.pi/180
+    rad = math.pi / 180
 
-    coordinateList = np.array([[end[0],end[1]],
-                              [end[0] + triangleSize * math.sin(rotation - 165*rad), end[1] + triangleSize * math.cos(rotation - 165*rad)],
-                              [end[0] + triangleSize * math.sin(rotation + 165*rad), end[1] + triangleSize * math.cos(rotation + 165*rad)]])
+    coordinateList = np.array([[end[0], end[1]],
+                               [end[0] + triangleSize * math.sin(rotation - 165 * rad),
+                                end[1] + triangleSize * math.cos(rotation - 165 * rad)],
+                               [end[0] + triangleSize * math.sin(rotation + 165 * rad),
+                                end[1] + triangleSize * math.cos(rotation + 165 * rad)]])
 
     return coordinateList
 
+
 # if __name__ == '__main__':
-    # newState = np.array([3,9])
-    # print(isSafe(newState,1,0.3))
+# newState = np.array([3,9])
+# print(isSafe(newState,1,0.3))
 
 if __name__ == "__main__":
 
@@ -212,10 +207,10 @@ if __name__ == "__main__":
     # startOrientation = 360 - istartOrientation
     # ul = iul
     # ur = iur
-    s1 = 5 + (is1)
-    s2 = 5 - (is2)
-    g1 = 5 + (ig1)
-    g2 = 5 - (ig2)
+    s1 = 5.5 + (is1)
+    s2 = 5.5 - (is2)
+    g1 = 5.5 + (ig1)
+    g2 = 5.5 - (ig2)
     # dt = idt if (idt >= 0.0) else 0.3
     # smoothCoef = ismoothCoef if (ismoothCoef >= 0) else 0.5
 
@@ -223,7 +218,7 @@ if __name__ == "__main__":
     #  Precision Parameters
     # ---------------------------
     threshDistance = 0.5
-    clearance = 0.4
+    clearance = 0.1
     # threshAngle = 5
 
     # ---------------------------
@@ -261,8 +256,8 @@ if __name__ == "__main__":
     blue = (0, 0, 255)
     yellow = (255, 255, 0)
 
-    size_x = 10
-    size_y = 10
+    size_x = 11
+    size_y = 11
     gameDisplay = pygame.display.set_mode((size_x * scale, size_y * scale))
 
     # ----------------------------
@@ -276,18 +271,14 @@ if __name__ == "__main__":
     ############################################################
     #                 Display Obstacles
     ############################################################
-    circlePts1 = [7, 2, 1]
-    circlePts2 = [7, 8, 1]
-    circlePts3 = [5, 5, 1]
-    circlePts4 = [3, 8, 1]
+    circlePts1 = [5.5, 5.5, 3]
 
-    pygame.draw.circle(gameDisplay, red, (circlePts1[0] * scale, circlePts1[1] * scale), circlePts1[2] * scale)
-    pygame.draw.circle(gameDisplay, red, (circlePts2[0] * scale, circlePts2[1] * scale), circlePts2[2] * scale)
-    pygame.draw.circle(gameDisplay, red, (circlePts3[0] * scale, circlePts3[1] * scale), circlePts3[2] * scale)
-    pygame.draw.circle(gameDisplay, red, (circlePts4[0] * scale, circlePts4[1] * scale), circlePts4[2] * scale)
-    pygame.draw.rect(gameDisplay, red, [int(scale * 2.25), int(scale * 1.25), int(scale * 1.5), int(scale * 1.5)])
-    pygame.draw.rect(gameDisplay, red, [int(scale * 0.25), int(scale * 4.25), int(scale * 1.5), int(scale * 1.5)])
-    pygame.draw.rect(gameDisplay, red, [int(scale * 8.25), int(scale * 4.25), int(scale * 1.5), int(scale * 1.5)])
+    pygame.draw.circle(gameDisplay, red, (int(circlePts1[0] * scale), int(circlePts1[1] * scale)),
+                       int(circlePts1[2] * scale))
+    pygame.draw.rect(gameDisplay, red, [int(scale * 0.5), int(scale * 4.5), int(scale * 2), int(scale * 2)])
+    pygame.draw.rect(gameDisplay, red, [int(scale * 8.5), int(scale * 4.5), int(scale * 2), int(scale * 2)])
+    pygame.draw.rect(gameDisplay, red, [int(scale * 4.5), int(scale * 0.5), int(scale * 2), int(scale * 2)])
+    pygame.draw.rect(gameDisplay, red, [int(scale * 4.5), int(scale * 8.5), int(scale * 2), int(scale * 2)])
 
     ############################################################
     #          Draw Explored Nodes and solution path
@@ -352,11 +343,11 @@ if __name__ == "__main__":
                                             [tuple(triangle[0]), tuple(triangle[1]), tuple(triangle[2])])
 
                     # draw start and goal locations
-                    pygame.draw.rect(gameDisplay, blue, (startCoor[0] * res * scale, startCoor[1] * res * scale, \
+                    pygame.draw.rect(gameDisplay, blue, (startCoor[0] * res * scale, startCoor[1] * res * scale,
                                                          res * 2, res * 2))
 
                     pygame.draw.circle(gameDisplay, blue,
-                                       (int(goalCoor[0] * res * scale), int(goalCoor[1] * res * scale)), \
+                                       (int(goalCoor[0] * res * scale), int(goalCoor[1] * res * scale)),
                                        math.floor(0.3 * res * scale))
 
                     pygame.draw.rect(gameDisplay, white, (goalCoor[0] * res * scale, goalCoor[1] * res * scale, \
@@ -385,12 +376,5 @@ if __name__ == "__main__":
 
             gameDisplay.blit(text, textrect)
             pygame.display.update()
-            pygame.time.delay(2000)
-
+            pygame.time.delay(200000)
     pygame.quit()
-
-
-
-
-
-
