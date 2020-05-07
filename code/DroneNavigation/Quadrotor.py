@@ -1,7 +1,6 @@
 """
-Class for plotting a quadrotor
-
-Author: Daniel Ingram (daniel-s-ingram)
+This is a modifed Quadrotor class
+initially coded by Daniel Ingram
 """
 
 from math import cos, sin
@@ -26,11 +25,6 @@ class Quadrotor():
         self.show_animation = show_animation
 
         if self.show_animation:
-            # plt.ion()
-            # for stopping simulation with the esc key.
-            # fig.canvas.mpl_connect('key_release_event',
-                    # lambda event: [exit(0) if event.key == 'escape' else None])
-
             self.ax = ax
 
         self.show_path = show_path
