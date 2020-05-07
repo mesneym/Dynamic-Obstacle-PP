@@ -36,7 +36,7 @@ def isValidWorkspace(pt, r, radiusClearance):
     #                              Circle 1 pts
     # ------------------------------------------------------------------------------
     ptInCircle1 = ((3 + radiusClearance) / r) ** 2 >= (x - 5.5) ** 2 + (y - 5.5) ** 2 or \
-                  (x - 5.5) ** 2 + (y - 5.5) ** 2 >= ((4.9 + radiusClearance) / r) ** 2
+                  (x - 5.5) ** 2 + (y - 5.5) ** 2 >= ((4.9 - radiusClearance) / r) ** 2
 
     pointZ = z < 0 or z > 5
 
@@ -286,14 +286,13 @@ if __name__ == "__main__":
     goalCoor = np.float32((np.float32([g1, g2, g3])) / res)
 
     startEndCoor = [startCoor, goalCoor]
-    print(startEndCoor)
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     q = []
     nodesExplored = {}
-    success, solution = generatePath(q, startEndCoor, nodesExplored, 1)
+    success, solution = generatePath(q, startEndCoor, nodesExplored, 0)
     drawEnv(size_x,size_y,size_z,ax)
     drawStartAndGoal()
 
@@ -313,8 +312,8 @@ if __name__ == "__main__":
     nList = sorted(nodesExplored.keys())
 
     # quiver = ax.quiver(*get_arrow(np.array([0, 0]), np.array([0, 0])))
-    plotExploredNodes(nodesExplored)
-    plotPath(solution)
+    plotExploredNodes(nodesExplored,ax)
+    plotPath(solution,ax)
     plt.show()
 
 

@@ -80,6 +80,7 @@ def isObstacleFree(pt1, pt2, radiusClearance):
     return True
 
 
+
 def printPath(node):
     solution = []
     current = node
@@ -379,8 +380,8 @@ if __name__ == "__main__":
     nList = sorted(nodesExplored.keys())
 
     # quiver = ax.quiver(*get_arrow(np.array([0, 0]), np.array([0, 0])))
-    plotExploredNodes(nodesExplored)
-    plotPath(solution)
+    plotExploredNodes(nodesExplored,ax)
+    plotPath(solution,ax)
     plt.show()
 
 

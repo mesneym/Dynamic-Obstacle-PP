@@ -36,7 +36,7 @@ def isValidWorkspace(pt, r, radiusClearance):
     #                              Circle 1 pts
     # ------------------------------------------------------------------------------
     ptInCircle1 = ((3 + radiusClearance) / r) ** 2 >= (x - 5.5) ** 2 + (y - 5.5) ** 2 or \
-                  (x - 5.5) ** 2 + (y - 5.5) ** 2 >= ((4.9 + radiusClearance) / r) ** 2
+                  (x - 5.5) ** 2 + (y - 5.5) ** 2 >= ((4.9 - radiusClearance) / r) ** 2
 
     pointZ = z < 0 or z > 5
 
@@ -337,8 +337,8 @@ if __name__ == "__main__":
     nList = sorted(nodesExplored.keys())
 
     # quiver = ax.quiver(*get_arrow(np.array([0, 0]), np.array([0, 0])))
-    plotExploredNodes(nodesExplored)
-    plotPath(solution)
+    plotExploredNodes(nodesExplored,ax)
+    plotPath(solution,ax)
     plt.show()
 
 
