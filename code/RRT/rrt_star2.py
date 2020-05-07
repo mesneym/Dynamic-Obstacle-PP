@@ -25,53 +25,46 @@ def isValidWorkspace(pt, r, radiusClearance):
     # ------------------------------------------------------------------------------
     #                              Circle 1 pts
     # ------------------------------------------------------------------------------
-    ptInCircle1 = (x - math.floor(7 / r)) ** 2 + (y - math.floor(2 / r)) ** 2 - ((1 + radiusClearance) / r) ** 2 <= 0
-
-    # ------------------------------------------------------------------------------
-    #                              Circle 2 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle2 = (x - math.floor(7 / r)) ** 2 + (y - math.floor(8 / r)) ** 2 - ((1 + radiusClearance) / r) ** 2 <= 0
-
-    # ------------------------------------------------------------------------------
-    #                              Circle 3 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle3 = (x - math.floor(5 / r)) ** 2 + (y - math.floor(5 / r)) ** 2.0 - (
-            (1.0 + radiusClearance) / r) ** 2 <= 0
-
-    # ------------------------------------------------------------------------------
-    #                              Circle 4 pts
-    # ------------------------------------------------------------------------------
-    ptInCircle4 = (x - math.floor(3 / r)) ** 2 + (y - math.floor(8 / r)) ** 2.0 - (
-            (1.0 + radiusClearance) / r) ** 2 <= 0
+    ptInCircle1 = (x - 5.5 / r) ** 2 + (y - 5.5 / r) ** 2 - (
+                (3.2 + radiusClearance) / r) ** 2 <= 0
 
     # --------------------------------------------------------------------------------
     #                             square 1 pts
     # --------------------------------------------------------------------------------
-    X = np.float32([2.25, 3.75, 3.75, 2.25]) / r
-    Y = np.float32([1.25, 1.25, 2.75, 2.75]) / r
-    ptInRectangle = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
-                    0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
-                    0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
+    X = np.float32([0.5, 2.5, 2.5, 0.5]) / r
+    Y = np.float32([4.5, 4.5, 6.5, 6.5]) / r
+    ptInSquare1 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
+                  0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
+                  0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
 
     # --------------------------------------------------------------------------------
     #                             Square 2 pts
     # --------------------------------------------------------------------------------
-    X = np.float32([0.25, 1.75, 1.75, 0.25]) / r
-    Y = np.float32([4.25, 4.25, 5.75, 5.75]) / r
-    ptInSquare1 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
+    X = np.float32([8.5, 10.5, 10.5, 8.5]) / r
+    Y = np.float32([4.5, 4.5, 6.5, 6.5]) / r
+    ptInSquare2 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
                   0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
                   0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
 
     # --------------------------------------------------------------------------------
     #                             Square 3 pts
     # --------------------------------------------------------------------------------
-    X = np.float32([8.25, 9.75, 9.75, 8.25]) / r
-    Y = np.float32([4.25, 4.25, 5.75, 5.75]) / r
-    ptInSquare2 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
+    X = np.float32([4.5, 6.5, 6.5, 4.5]) / r
+    Y = np.float32([0.5, 0.5, 2.5, 2.5]) / r
+    ptInSquare3 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
                   0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
                   0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
 
-    if ptInCircle1 or ptInCircle2 or ptInCircle3 or ptInCircle4 or ptInRectangle or ptInSquare1 or ptInSquare2:
+    # --------------------------------------------------------------------------------
+    #                             Square 4 pts
+    # --------------------------------------------------------------------------------
+    X = np.float32([4.5, 6.5, 6.5, 4.5]) / r
+    Y = np.float32([8.5, 8.5, 10.5, 10.5]) / r
+    ptInSquare4 = Y[0] - radiusClearance / r <= y <= Y[2] + radiusClearance / r and \
+                  0 >= (Y[2] - Y[1]) * (x - X[1]) - radiusClearance / r and \
+                  0 >= (Y[0] - Y[3]) * (x - X[3]) - radiusClearance / r
+
+    if ptInCircle1 or ptInSquare1 or ptInSquare2 or ptInSquare3 or ptInSquare4:
         return False
     return True
 
@@ -119,8 +112,8 @@ def printPath(node):
 
 
 def samplePoint():
-    x = rd.uniform(0.0, 10.0)
-    y = rd.uniform(0.0, 10.0)
+    x = rd.uniform(0.0, 11.0)
+    y = rd.uniform(0.0, 11.0)
     return [x, y]
 
 
@@ -213,7 +206,7 @@ def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=
 
         rewiring(bestNeighbour, neighbours, radiusClearance)
 
-        if distance(newNode.state, [gx, gy]) <= 0.3:
+        if distance(newNode.state, [gx, gy]) <= 0.5:
             sol = printPath(newNode)
             return [True, sol]
 
@@ -283,10 +276,10 @@ if __name__ == "__main__":
     # startOrientation = 360 - istartOrientation
     # ul = iul
     # ur = iur
-    s1 = 5 + (is1)
-    s2 = 5 - (is2)
-    g1 = 5 + (ig1)
-    g2 = 5 - (ig2)
+    s1 = 5.5 + (is1)
+    s2 = 5.5 - (is2)
+    g1 = 5.5 + (ig1)
+    g2 = 5.5 - (ig2)
     # dt = idt if (idt >= 0.0) else 0.3
     # smoothCoef = ismoothCoef if (ismoothCoef >= 0) else 0.5
 
@@ -294,7 +287,7 @@ if __name__ == "__main__":
     #  Precision Parameters
     # ---------------------------
     threshDistance = 0.5
-    clearance = 0.4
+    clearance = 0.1
     # threshAngle = 5
 
     # ---------------------------
@@ -332,8 +325,8 @@ if __name__ == "__main__":
     blue = (0, 0, 255)
     yellow = (255, 255, 0)
 
-    size_x = 10
-    size_y = 10
+    size_x = 11
+    size_y = 11
     gameDisplay = pygame.display.set_mode((size_x * scale, size_y * scale))
 
     # ----------------------------
@@ -347,18 +340,14 @@ if __name__ == "__main__":
     ############################################################
     #                 Display Obstacles
     ############################################################
-    circlePts1 = [7, 2, 1]
-    circlePts2 = [7, 8, 1]
-    circlePts3 = [5, 5, 1]
-    circlePts4 = [3, 8, 1]
+    circlePts1 = [5.5, 5.5, 3]
 
-    pygame.draw.circle(gameDisplay, red, (circlePts1[0] * scale, circlePts1[1] * scale), circlePts1[2] * scale)
-    pygame.draw.circle(gameDisplay, red, (circlePts2[0] * scale, circlePts2[1] * scale), circlePts2[2] * scale)
-    pygame.draw.circle(gameDisplay, red, (circlePts3[0] * scale, circlePts3[1] * scale), circlePts3[2] * scale)
-    pygame.draw.circle(gameDisplay, red, (circlePts4[0] * scale, circlePts4[1] * scale), circlePts4[2] * scale)
-    pygame.draw.rect(gameDisplay, red, [int(scale * 2.25), int(scale * 1.25), int(scale * 1.5), int(scale * 1.5)])
-    pygame.draw.rect(gameDisplay, red, [int(scale * 0.25), int(scale * 4.25), int(scale * 1.5), int(scale * 1.5)])
-    pygame.draw.rect(gameDisplay, red, [int(scale * 8.25), int(scale * 4.25), int(scale * 1.5), int(scale * 1.5)])
+    pygame.draw.circle(gameDisplay, red, (int(circlePts1[0] * scale), int(circlePts1[1] * scale)),
+                       int(circlePts1[2] * scale))
+    pygame.draw.rect(gameDisplay, red, [int(scale * 0.5), int(scale * 4.5), int(scale * 2), int(scale * 2)])
+    pygame.draw.rect(gameDisplay, red, [int(scale * 8.5), int(scale * 4.5), int(scale * 2), int(scale * 2)])
+    pygame.draw.rect(gameDisplay, red, [int(scale * 4.5), int(scale * 0.5), int(scale * 2), int(scale * 2)])
+    pygame.draw.rect(gameDisplay, red, [int(scale * 4.5), int(scale * 8.5), int(scale * 2), int(scale * 2)])
 
     ############################################################
     #          Draw Explored Nodes and solution path
@@ -443,7 +432,7 @@ if __name__ == "__main__":
                     pygame.draw.line(gameDisplay, yellow, (xt, yt), (x, y), 3)
                     pygame.draw.circle(gameDisplay, red, (int(x), int(y)), 4)
                     pygame.display.update()
-                pygame.time.delay(4000)
+                pygame.time.delay(40000)
                 draw = False
 
         else:
@@ -456,6 +445,6 @@ if __name__ == "__main__":
 
             gameDisplay.blit(text, textrect)
             pygame.display.update()
-            pygame.time.delay(2000)
+            pygame.time.delay(20000)
 
     pygame.quit()

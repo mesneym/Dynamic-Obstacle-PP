@@ -85,18 +85,26 @@ def isSafe(newState, r, radiusClearance):
     return isValidWorkspace(newState, r, radiusClearance)
 
 
+def steer(xNearest,xRand):
+    stepsize = 1
+    dist = distance(xNearest,xRand) 
+    if (dist<stepsize):
+        return xRand
+    else:
+        t = stepsize/dist
+        v = xRand - xNearest
+        r = t*v + xNearest
+        return r
 
-def safePointInPath(pt1, pt2, radiusClearance):
+def isObstacleFree(pt1, pt2, radiusClearance):
     stepsize = 0.1
     t = np.arange(stepsize, 1.0 + stepsize, stepsize)
     v = pt2 - pt1
     for i in range(len(t)):
-        r = (t[i] * v + pt1)
+        r = t[i] * v + pt1
         if not isSafe(r, 1, radiusClearance):
-            if i==0:
-                return pt1
-            return  t[i-1]*v + pt1
-    return r
+            return False
+    return True
 
 
 def printPath(node):
@@ -108,7 +116,7 @@ def printPath(node):
     return solution
 
 
-def generatePoint():
+def samplePoint():
     x = rd.uniform(0.0, 10.0)
     y = rd.uniform(0.0, 10.0)
     return [x, y]
@@ -119,19 +127,18 @@ def distance(startPosition, goalPosition):
     return math.sqrt((gx - sx) ** 2 + (gy - sy) ** 2)
 
 
-def nearestNode(nodesExplored, newState):
-    minimum = np.inf
+def nearest(nodesExplored, newState):
+    minDist = np.inf
     for key, node in nodesExplored.items():
         dist = distance(node.state, newState)
-        if dist < minimum:
-            minimum = dist
-            string = key
-    return string, minimum
+        if dist < minDist:
+            minDist = dist
+            minKey = key
+    return minKey, minDist
 
 
-# generates optimal path for robot
 def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 3000):
-    
+
     #get start and goal locations
     sx, sy = startEndCoor[0]
     gx, gy = startEndCoor[1]
@@ -141,28 +148,27 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 30
     root = Node(np.float32([sx, sy]), None)
     nodesExplored[key] = root
 
-
-    # for i in range(numIterations):
-    
-    while True:
+    for i in range(numIterations):
         #sample random point
-        newPosX, newPosY = generatePoint()
-        newState = np.array([newPosX, newPosY])
+        newPosX, newPosY = samplePoint()
+        xRand = np.array([newPosX, newPosY])
 
-        #get safe point --steer
-        nearestNodeKey,_ = nearestNode(nodesExplored, newState)
-        nearestSafePoint = safePointInPath(nodesExplored[nearestNodeKey].state, newState, radiusClearance)
-        
-        if((nearestSafePoint == nodesExplored[nearestNodeKey].state).all()):
+        #Get Nearest Node
+        xNearestKey,_ = nearest(nodesExplored, xRand)
+        xNearest = nodesExplored[xNearestKey].state
+
+        #steer in direction of path
+        xNew = steer(xNearest, xRand)
+
+        #check if edge is not in obstacle
+        if((xNew == xNearest).all() or not isObstacleFree(xNearest, xNew,radiusClearance)):
             continue
-                
-        #add node to nodesExplored --add vertex and edge
-        newNode = Node(nearestSafePoint, nodesExplored[nearestNodeKey])
-        newNode.parent = nodesExplored[nearestNodeKey]
-        
+
+        #add node to nodesExplored(add vertex and edge)
+        newNode = Node(xNew, nodesExplored[xNearestKey])
         s = str(newNode.state[0]) + str(newNode.state[1])
         nodesExplored[s] = newNode
-        
+
         #print path if goal is reached
         if distance(newNode.state, [gx, gy]) <= 0.3:
             sol = printPath(newNode)
@@ -172,7 +178,7 @@ def generatePath(q,startEndCoor, nodesExplored,radiusClearance,numIterations= 30
 
 
 def triangleCoordinates(start, end, triangleSize = 5):
-    
+
     rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi/2
     # print(math.atan2(start[1] - end[1], end[0] - start[0]))
     rad = math.pi/180
@@ -382,10 +388,5 @@ if __name__ == "__main__":
             pygame.time.delay(2000)
 
     pygame.quit()
-
-
-
-
-
 
 
