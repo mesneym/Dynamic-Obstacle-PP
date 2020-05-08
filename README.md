@@ -45,7 +45,7 @@ Here are the sample output obtained by running the code:
 ![](gif/rrt_star2.gif)
 
 ## Results obtained in 3D:
-### To run the RRT in 3D:
+### To run Dynamic Obstacle avoidance using RRT in 3D:
 Please execute the following commands:
 ```
 cd DroneVavigation
