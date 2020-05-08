@@ -38,7 +38,7 @@ def isValidWorkspace(pt, r, radiusClearance):
     #                              Circle 1 pts
     # ------------------------------------------------------------------------------
     ptInCircle1 = ((3 + radiusClearance) / r) ** 2 >= (x - 5.5) ** 2 + (y - 5.5) ** 2 or \
-                  (x - 5.5) ** 2 + (y - 5.5) ** 2 >= ((4.9 + radiusClearance) / r) ** 2
+                  (x - 5.5) ** 2 + (y - 5.5) ** 2 >= ((4.9 - radiusClearance) / r) ** 2
 
     pointZ = z < 0 or z > 5
 
@@ -49,8 +49,8 @@ def isValidWorkspace(pt, r, radiusClearance):
 
 # checks whether next action is near an obstacle or ill defined
 def isSafe(newState, r, radiusClearance):
-    col = float(10 / r)
-    row = float(10 / r)
+    col = float(11 / r)
+    row = float(11 / r)
 
     if newState[0] < 0.0 or newState[0] > col or newState[1] < 0.0 or newState[1] > row:
         return False
@@ -80,7 +80,6 @@ def isObstacleFree(pt1, pt2, radiusClearance):
     return True
 
 
-
 def printPath(node):
     solution = []
     current = node
@@ -91,8 +90,8 @@ def printPath(node):
 
 
 def samplePoint():
-    x = rd.uniform(0.0, 10.0)
-    y = rd.uniform(0.0, 10.0)
+    x = rd.uniform(0.0, 11.0)
+    y = rd.uniform(0.0, 11.0)
     z = rd.uniform(0.0, 5.0)
     return [x, y, z]
 
@@ -193,7 +192,7 @@ def generatePath(q, startEndCoor, nodesExplored, radiusClearance, numIterations=
     return [False, None]
 
 
-def smoothSolutionPath(solution, smoothCoeff=0.5, tolerance=0.000001, pointWeight=0.5):
+def smoothSolutionPath(solution, smoothCoeff=0.5, tolerance=0.0001, pointWeight=0.5):
     solution.reverse()
     newSolution = solution
     threshold = tolerance
@@ -324,18 +323,12 @@ def drawStartAndGoal():
 
 
 if __name__ == "__main__":
-    is1 = -3
-    is2 = -3
-    is3 = 2
-    ig1 = 3
-    ig2 = 3
-    ig3 = 2
-    s1 = 5.5 + is1
-    s2 = 5.5 + is2
-    s3 = is3
-    g1 = 5.5 + ig1
-    g2 = 5.5 + ig2
-    g3 = ig3
+    s1 = 2.5
+    s2 = 2.5
+    s3 = 2
+    g1 = 8.5
+    g2 = 8.5
+    g3 = 2
 
     # ----------------------------
     #  Display parameters
@@ -359,8 +352,9 @@ if __name__ == "__main__":
 
     q = []
     nodesExplored = {}
-    success, solution = generatePath(q, startEndCoor, nodesExplored, 1)
+    success, solution = generatePath(q, startEndCoor, nodesExplored, 0.2)
     solution = smoothSolutionPath(solution)
+    solution.reverse()
     drawEnv(size_x,size_y,size_z,ax)
     drawStartAndGoal()
 
@@ -381,8 +375,5 @@ if __name__ == "__main__":
 
     # quiver = ax.quiver(*get_arrow(np.array([0, 0]), np.array([0, 0])))
     plotExploredNodes(nodesExplored,ax)
-    plotPath(solution,ax)
+    plotPath(solution, ax)
     plt.show()
-
-
-
