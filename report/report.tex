@@ -171,8 +171,13 @@ obstruct the generated drone solution path
  and is close to the intended drone, replanning occurs.
  In replanning, the RRT/RRT* algorithm replans and finds a new path using current position of 
  the drone and the goal position with the updated environment(Obstacle blocking drone's path).
- Hence, the RRT/RRT* generates new path avoiding the obstacle. This process continues till the drone reaches the goal point.
-
+ Hence, the RRT/RRT* generates new path avoiding the obstacle. This process continues till the drone reaches the goal point. The pseudo code is given below[Reference 2]:
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=6cm]{dynpseudocode}
+    \caption{Dynamic Obstacle Avoidance using RRT pseudo code}
+    \label{fig:Dynamic Obstacle Avoidance using RRT pseudo code}
+\end{figure}
 \section{\textbf{Software and Visualization tool Used}}
 \begin{enumerate}
 \item Python version 3
@@ -314,8 +319,11 @@ We have developed RRT and RRT* algorithms to adapt to dynamic changes in the env
 \section{\textbf{Future Scope}}
 Our future goal would be to integrate the algorithm with ROS and provide a simulation in gazebo. 
 \section{References:}
-The modified quadrotor.py was initially coded by Daniel-S-Ingram, Refer,
+\begin{enumerate}
+\item The modified quadrotor.py was initially coded by Daniel-S-Ingram, Refer,
 https://github.com/daniel-s-ingram
+\item \href{https://arxiv.org/pdf/1704.04585.pdf}{\underline{Dynamic Obstacle Avoidance pseudo code}}
+\end{enumerate}
 
 \section{Team members}
 \begin{enumerate}
