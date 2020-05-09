@@ -1,0 +1,16 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Plan of Action}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Designing the environment}{section.2}% 3
+\BOOKMARK [1][-]{section.3}{Path planning method}{}% 4
+\BOOKMARK [2][-]{subsection.3.1}{Types of Obstacles:}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.2}{Sampling Based Algorithms}{section.3}% 6
+\BOOKMARK [1][-]{section.4}{ Path planning for Dynamic obstacles:}{}% 7
+\BOOKMARK [1][-]{section.5}{Software and Visualization tool Used}{}% 8
+\BOOKMARK [1][-]{section.6}{Results}{}% 9
+\BOOKMARK [2][-]{subsection.6.1}{Implementation of RRT and RRT* in 2D environment}{section.6}% 10
+\BOOKMARK [2][-]{subsection.6.2}{Implementation of RRT in 3D environment}{section.6}% 11
+\BOOKMARK [2][-]{subsection.6.3}{Implementation of RRT* in 3D environment}{section.6}% 12
+\BOOKMARK [2][-]{subsection.6.4}{Dynamic Environment path planning results:}{section.6}% 13
+\BOOKMARK [1][-]{section.7}{Goal Achieved:}{}% 14
+\BOOKMARK [1][-]{section.8}{Future Scope}{}% 15
+\BOOKMARK [1][-]{section.9}{References:}{}% 16
