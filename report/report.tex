@@ -87,7 +87,6 @@ Below is a brief introduction to the types of obstacles as well as the different
 \subsection{\textbf{Sampling Based Algorithms}}
 Below is a brief introduction to RRT with its variants.
 \begin{enumerate}
-%\item  \textbf{Graph generation}: The first step of any path planning method is to generate a probabilistic graph of the environment. In order to generate a map, we use RRT graph generation algorithm. The RRT algorithm also takes into account the differential constraints of the drone.\\
 
 \item \textbf{RRT (Rapidly Exploring Random Trees)}: In RRT, the map  is generated with the help of randomly sampled points. 
 Newly, sampled points are joined to nearest nearest node of the RRT tree and this continues  until the target is reached. 
@@ -121,7 +120,7 @@ In rewiring, all the nodes surrounding the newly added node are checked for bett
 cost-to-come. 
 The rewiring process occurs around the neighborhood of the newly added node at some threholded distance. Thus,
  optimality of the path generated is achieved by finding path with minimum cost.
-
+\\ \\ 
 Although RRT* tries to find a more optimal path, the downside is that the rewiring occurs for all newly added nodes and this makes it 
 a computationally expensive. The figure below shows the comparison of nodes exploration between RRT and RRT*. Refer below for the 
 pseudo code for RRT*
@@ -166,15 +165,17 @@ where $x_i$ is the $i^{th}$ solution coordinate \\
 By tuning the $\alpha$ and $\beta$ parameters we can control the smoothing process.
 \end{enumerate}
 \section{ \textbf{Path planning for Dynamic obstacles:}}
-For dynamic environment, we have created moving drones as dynamic obstacles.
-We have modified RRT and RRT* algorithm to make it work in a dynamic environment. 
-For dynamic environment, we are constantly keeping track the distance of the obstacles from the drone path. 
-If an obstacle obstructs the generated drone solution path and is also very close to the drone, replanning occurs.
-In replanning, we basically implement the RRT/RRT* algorithm from the current position of the drone to the goal position with the updated environment(Obstacle blocking drone's path). Hence, the RRT/RRT* generates new path avoiding the obstacle. This process continues till the drone reaches the goal point.
+For dynamic environment, other moving drones are used as dynamic obstacles.
+The distance of the other drones are constantly tracked and should any of them 
+obstruct the generated drone solution path
+ and is close to the intended drone, replanning occurs.
+ In replanning, the RRT/RRT* algorithm replans and finds a new path using current position of 
+ the drone and the goal position with the updated environment(Obstacle blocking drone's path).
+ Hence, the RRT/RRT* generates new path avoiding the obstacle. This process continues till the drone reaches the goal point.
+
 \section{\textbf{Software and Visualization tool Used}}
 \begin{enumerate}
 \item Python version 3
-\item Python version 2.7
 \item Matplotlib
 \item Pygame
 \end{enumerate}
